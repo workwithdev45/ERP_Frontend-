@@ -20,8 +20,11 @@ const Brand = styled.div`
   display: flex;
   align-items: center;
   gap: ${({ theme }) => theme.space[3]};
-  padding: ${({ theme }) => theme.space[5]} ${({ theme }) => theme.space[5]};
+  height: 72px;
+  flex-shrink: 0;
+  padding: 0 ${({ theme }) => theme.space[5]};
   border-bottom: 1px solid ${({ theme }) => theme.colors.border};
+  box-sizing: border-box;
 `;
 
 const BrandMark = styled.div`
@@ -45,11 +48,6 @@ const BrandName = styled.div`
   font-weight: 700;
   font-size: 15px;
   color: ${({ theme }) => theme.colors.navy};
-`;
-
-const BrandSub = styled.div`
-  font-size: 12px;
-  color: ${({ theme }) => theme.colors.textMuted};
 `;
 
 const NavList = styled.nav`
@@ -119,11 +117,10 @@ const FooterNav = styled.div`
 `;
 
 interface SidebarProps {
-  hospitalName?: string;
-  branchName?: string;
+  companyName?: string;
 }
 
-export function Sidebar({ hospitalName = 'LifeCare HMS', branchName = 'City Branch' }: SidebarProps) {
+export function Sidebar({ companyName = 'Your Company' }: SidebarProps) {
   const { logout } = useAuth();
   const navigate = useNavigate();
 
@@ -137,8 +134,7 @@ export function Sidebar({ hospitalName = 'LifeCare HMS', branchName = 'City Bran
       <Brand>
         <BrandMark>+</BrandMark>
         <BrandText>
-          <BrandName>{hospitalName}</BrandName>
-          <BrandSub>{branchName}</BrandSub>
+          <BrandName>{companyName}</BrandName>
         </BrandText>
       </Brand>
       <NavList>

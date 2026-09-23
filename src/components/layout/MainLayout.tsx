@@ -1,5 +1,6 @@
 import { Outlet } from 'react-router-dom';
 import styled from 'styled-components';
+import { authStorage } from '@/utils/authStorage';
 import { Header } from './Header';
 import { Sidebar } from './Sidebar';
 
@@ -22,9 +23,11 @@ const Content = styled.main`
 `;
 
 export function MainLayout() {
+  const session = authStorage.getSession();
+
   return (
     <Shell>
-      <Sidebar />
+      <Sidebar companyName={session?.tenantName} />
       <Main>
         <Header />
         <Content>

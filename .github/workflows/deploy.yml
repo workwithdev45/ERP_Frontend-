@@ -1,0 +1,59 @@
+name: Build and deploy frontend
+
+# Deploys on a published GitHub Release (tag = the version, e.g. v1.2.0) rather
+# than on every push — same convention as the backend's release workflow.
+#
+# Rollback: re-run this workflow for a previous release tag (the build is
+# deterministic from source), or restore a prior object version if S3
+# Versioning is enabled on the bucket.
+on:
+  release:
+    types: [published]
+
+env:
+  AWS_REGION: ap-south-1
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: npm
+
+      - run: npm ci
+
+      # Vite bakes these into the static bundle at build time — they must be
+      # set as repo Variables (Settings > Secrets and variables > Actions > Variables),
+      # not secrets, since they end up in public JS anyway.
+      - name: Build
+        env:
+          VITE_API_BASE_URL: ${{ vars.VITE_API_BASE_URL }}
+          VITE_PORTAL_DOMAIN: ${{ vars.VITE_PORTAL_DOMAIN }}
+        run: npm run build
+
+      - name: Stamp version
+        run: |
+          printf '{"version":"%s","builtAt":"%s"}\n' \
+            "${{ github.event.release.tag_name }}" "$(date -u +%FT%TZ)" \
+            > dist/version.json
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: Sync to S3
+        run: |
+          aws s3 sync dist/ "s3://${{ secrets.FRONTEND_S3_BUCKET }}" --delete
+
+      - name: Invalidate CloudFront cache
+        run: |
+          aws cloudfront create-invalidation \
+            --distribution-id "${{ secrets.CLOUDFRONT_DISTRIBUTION_ID }}" \
+            --paths "/*"

@@ -7,20 +7,15 @@ export interface NavItem {
 
 export const PRIMARY_NAV: NavItem[] = [
   { key: 'dashboard', label: 'Dashboard', icon: '▦', path: '/dashboard' },
-  { key: 'patients', label: 'Patients', icon: '◍', path: '/patients' },
-  { key: 'appointments', label: 'Appointments', icon: '▤', path: '/appointments' },
-  { key: 'opd', label: 'OPD', icon: '⚕', path: '/opd' },
-  { key: 'ipd', label: 'IPD', icon: '🛏', path: '/ipd' },
-  { key: 'emergency', label: 'Emergency', icon: '✳', path: '/emergency' },
-  { key: 'bed-management', label: 'Bed Management', icon: '⬒', path: '/bed-management' },
-  { key: 'clinical', label: 'Clinical', icon: '🩺', path: '/clinical' },
-  { key: 'diagnostics', label: 'Diagnostics', icon: '🔬', path: '/diagnostics' },
-  { key: 'pharmacy', label: 'Pharmacy', icon: '💊', path: '/pharmacy' },
-  { key: 'billing', label: 'Billing', icon: '💳', path: '/billing' },
-  { key: 'insurance', label: 'Insurance', icon: '🛡', path: '/insurance' },
-  { key: 'administration', label: 'Administration', icon: '⚙', path: '/administration' },
+  { key: 'sales', label: 'Sales', icon: '💰', path: '/sales' },
+  { key: 'purchase', label: 'Purchase', icon: '🛒', path: '/purchase' },
+  { key: 'inventory', label: 'Inventory', icon: '📦', path: '/inventory' },
+  { key: 'production', label: 'Production', icon: '🏭', path: '/production' },
+  { key: 'accounts', label: 'Accounts', icon: '📒', path: '/accounts' },
+  { key: 'crm', label: 'CRM', icon: '🤝', path: '/crm' },
+  { key: 'hr', label: 'HR & Payroll', icon: '🧑‍💼', path: '/hr' },
   { key: 'reports', label: 'Reports', icon: '📊', path: '/reports' },
-  { key: 'settings', label: 'Settings', icon: '⚙', path: '/settings' },
+  { key: 'settings', label: 'Settings', icon: '⚙', path: '/settings/users' },
 ];
 
 export const SECONDARY_NAV: NavItem[] = [{ key: 'help', label: 'Help', icon: '❓', path: '/help' }];

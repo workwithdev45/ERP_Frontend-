@@ -131,7 +131,7 @@ export function Header() {
         <SearchBadge>
           <SearchOutlined />
         </SearchBadge>
-        <SearchInput placeholder="Search MRN, Patient Name, or ID..." />
+        <SearchInput placeholder="Search customers, products, or invoices..." />
       </SearchWrap>
       <Spacer />
       <IconButton aria-label="Notifications">

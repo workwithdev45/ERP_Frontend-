@@ -108,14 +108,14 @@ export function LoginPage() {
           <Logo />
         </LogoRow>
         <Title>Welcome back</Title>
-        <Subtitle>Sign in to your hospital portal</Subtitle>
+        <Subtitle>Sign in to your company portal</Subtitle>
         <Form onSubmit={handleSubmit}>
           <Input
             id="portalId"
             type="text"
-            label="Hospital Portal ID"
-            placeholder="e.g. sunrise-hospital"
-            prefixIcon="🏥"
+            label="Company Portal ID"
+            placeholder="e.g. acme-traders"
+            prefixIcon="🏢"
             value={portalId}
             onChange={(e) => setPortalId(e.target.value)}
             required

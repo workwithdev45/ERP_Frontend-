@@ -37,7 +37,7 @@ export function Logo() {
     <Wrap>
       <Mark>+</Mark>
       <Name>
-        MediCore <NameAccent>HMS</NameAccent>
+        MSME <NameAccent>ERP</NameAccent>
       </Name>
     </Wrap>
   );

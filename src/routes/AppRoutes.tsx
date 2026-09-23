@@ -2,14 +2,28 @@ import { createBrowserRouter, Navigate, Outlet } from 'react-router-dom';
 import { MainLayout } from '@/components/layout/MainLayout';
 import { LoginPage } from '@/modules/auth/pages/LoginPage';
 import { AdminDashboardPage } from '@/modules/dashboard/pages/AdminDashboardPage';
-import { OnboardingProvider } from '@/modules/hospital/context/OnboardingContext';
-import { GetStartedPage } from '@/modules/hospital/pages/onboarding/GetStartedPage';
-import { RegisterHospitalPage } from '@/modules/hospital/pages/onboarding/RegisterHospitalPage';
-import { VerifyOtpPage } from '@/modules/hospital/pages/onboarding/VerifyOtpPage';
-import { ClaimPortalPage } from '@/modules/hospital/pages/onboarding/ClaimPortalPage';
-import { SetPasswordPage } from '@/modules/hospital/pages/onboarding/SetPasswordPage';
-import { OnboardingSuccessPage } from '@/modules/hospital/pages/onboarding/OnboardingSuccessPage';
-import { FindHospitalPage } from '@/modules/hospital/pages/onboarding/FindHospitalPage';
+import { OnboardingProvider } from '@/modules/onboarding/context/OnboardingContext';
+import { GetStartedPage } from '@/modules/onboarding/pages/GetStartedPage';
+import { RegisterCompanyPage } from '@/modules/onboarding/pages/RegisterCompanyPage';
+import { VerifyOtpPage } from '@/modules/onboarding/pages/VerifyOtpPage';
+import { ClaimPortalPage } from '@/modules/onboarding/pages/ClaimPortalPage';
+import { SetPasswordPage } from '@/modules/onboarding/pages/SetPasswordPage';
+import { OnboardingSuccessPage } from '@/modules/onboarding/pages/OnboardingSuccessPage';
+import { FindCompanyPage } from '@/modules/onboarding/pages/FindCompanyPage';
+import { AcceptInvitePage } from '@/modules/user/pages/AcceptInvitePage';
+import { UsersPage } from '@/modules/user/pages/UsersPage';
+import { UserDetailPage } from '@/modules/user/pages/UserDetailPage';
+import { RolesPage } from '@/modules/accesscontrol/pages/RolesPage';
+import { PermissionsPage } from '@/modules/accesscontrol/pages/PermissionsPage';
+import { SalesPage } from '@/modules/sales/pages/SalesPage';
+import { PurchasePage } from '@/modules/purchase/pages/PurchasePage';
+import { InventoryPage } from '@/modules/inventory/pages/InventoryPage';
+import { ProductionPage } from '@/modules/production/pages/ProductionPage';
+import { AccountsPage } from '@/modules/accounts/pages/AccountsPage';
+import { CrmPage } from '@/modules/crm/pages/CrmPage';
+import { HrPage } from '@/modules/hr/pages/HrPage';
+import { ReportsPage } from '@/modules/reports/pages/ReportsPage';
+import { HelpPage } from '@/modules/dashboard/pages/HelpPage';
 import { ProtectedRoute } from './ProtectedRoute';
 import { ROUTE_PATHS } from './routePaths';
 
@@ -31,8 +45,8 @@ export const appRouter = createBrowserRouter([
     element: <OnboardingLayoutRoute />,
     children: [
       { index: true, element: <GetStartedPage /> },
-      { path: 'find-hospital', element: <FindHospitalPage /> },
-      { path: 'register', element: <RegisterHospitalPage /> },
+      { path: 'find-company', element: <FindCompanyPage /> },
+      { path: 'register', element: <RegisterCompanyPage /> },
       { path: 'verify-otp', element: <VerifyOtpPage /> },
       { path: 'claim-portal', element: <ClaimPortalPage /> },
       { path: 'set-password', element: <SetPasswordPage /> },
@@ -44,11 +58,30 @@ export const appRouter = createBrowserRouter([
     element: <LoginPage />,
   },
   {
+    path: ROUTE_PATHS.acceptInvite,
+    element: <AcceptInvitePage />,
+  },
+  {
     element: <ProtectedRoute />,
     children: [
       {
         element: <MainLayout />,
-        children: [{ path: ROUTE_PATHS.dashboard, element: <AdminDashboardPage /> }],
+        children: [
+          { path: ROUTE_PATHS.dashboard, element: <AdminDashboardPage /> },
+          { path: ROUTE_PATHS.sales, element: <SalesPage /> },
+          { path: ROUTE_PATHS.purchase, element: <PurchasePage /> },
+          { path: ROUTE_PATHS.inventory, element: <InventoryPage /> },
+          { path: ROUTE_PATHS.production, element: <ProductionPage /> },
+          { path: ROUTE_PATHS.accounts, element: <AccountsPage /> },
+          { path: ROUTE_PATHS.crm, element: <CrmPage /> },
+          { path: ROUTE_PATHS.hr, element: <HrPage /> },
+          { path: ROUTE_PATHS.reports, element: <ReportsPage /> },
+          { path: ROUTE_PATHS.help, element: <HelpPage /> },
+          { path: ROUTE_PATHS.settings.users, element: <UsersPage /> },
+          { path: ROUTE_PATHS.settings.userDetail(':id'), element: <UserDetailPage /> },
+          { path: ROUTE_PATHS.settings.roles, element: <RolesPage /> },
+          { path: ROUTE_PATHS.settings.permissions, element: <PermissionsPage /> },
+        ],
       },
     ],
   },

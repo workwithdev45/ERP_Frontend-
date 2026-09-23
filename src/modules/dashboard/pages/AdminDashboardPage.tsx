@@ -1,14 +1,13 @@
-/*
 import styled from 'styled-components';
 import { Button } from '@/components/common/Button/Button';
 import { Card } from '@/components/common/Card/Card';
-import { BedOccupancyWidget } from '../components/BedOccupancyWidget';
-import { EmergencyAlertsPanel } from '../components/EmergencyAlertsPanel';
-import { PatientTrendChart } from '../components/PatientTrendChart';
-import { PendingTasksWidget } from '../components/PendingTasksWidget';
 import { StatCard } from '../components/StatCard';
-import { TodaysAppointmentsPanel } from '../components/TodaysAppointmentsPanel';
-import { DASHBOARD_STATS } from '../services/dashboardService';
+import {
+  DASHBOARD_STATS,
+  PENDING_TASKS,
+  RECENT_ORDERS,
+  TOP_SELLING_PRODUCTS,
+} from '../services/dashboardService';
 
 const Head = styled.div`
   display: flex;
@@ -29,25 +28,6 @@ const PageSubtitle = styled.p`
   font-size: 14px;
   color: ${({ theme }) => theme.colors.textSecondary};
   margin-top: 2px;
-`;
-
-const HeadActions = styled.div`
-  display: flex;
-  align-items: center;
-  gap: ${({ theme }) => theme.space[3]};
-`;
-
-const DatePill = styled.div`
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  padding: 10px ${({ theme }) => theme.space[4]};
-  border: 1px solid ${({ theme }) => theme.colors.border};
-  border-radius: ${({ theme }) => theme.radius.sm};
-  background: ${({ theme }) => theme.colors.bg};
-  font-size: 14px;
-  color: ${({ theme }) => theme.colors.navy};
-  white-space: nowrap;
 `;
 
 const Layout = styled.div`
@@ -74,7 +54,7 @@ const SideColumn = styled.div`
 
 const StatGrid = styled.div`
   display: grid;
-  grid-template-columns: repeat(4, 1fr);
+  grid-template-columns: repeat(3, 1fr);
   gap: ${({ theme }) => theme.space[4]};
 
   @media (max-width: 900px) {
@@ -82,25 +62,43 @@ const StatGrid = styled.div`
   }
 `;
 
-const ChartsGrid = styled.div`
-  display: grid;
-  grid-template-columns: 1.3fr 1fr;
-  gap: ${({ theme }) => theme.space[4]};
-
-  @media (max-width: 700px) {
-    grid-template-columns: 1fr;
-  }
-`;
-
-const ChartCard = styled(Card)`
+const PanelCard = styled(Card)`
   padding: ${({ theme }) => theme.space[5]};
 `;
 
-const ChartTitle = styled.div`
+const PanelTitle = styled.div`
   font-weight: 700;
   font-size: 14px;
   color: ${({ theme }) => theme.colors.navy};
   margin-bottom: ${({ theme }) => theme.space[4]};
+`;
+
+const Row = styled.div`
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: ${({ theme }) => theme.space[2]} 0;
+  border-bottom: 1px solid ${({ theme }) => theme.colors.border};
+  font-size: 13px;
+
+  &:last-child {
+    border-bottom: none;
+  }
+`;
+
+const StatusPill = styled.span<{ $status: 'Paid' | 'Pending' | 'Overdue' }>`
+  font-size: 12px;
+  font-weight: 600;
+  padding: 2px 8px;
+  border-radius: 999px;
+  color: ${({ theme, $status }) =>
+    $status === 'Paid' ? theme.colors.success : $status === 'Overdue' ? theme.colors.danger : theme.colors.warning};
+  background: ${({ theme, $status }) =>
+    $status === 'Paid'
+      ? theme.colors.accentLight
+      : $status === 'Overdue'
+        ? theme.colors.dangerLight
+        : theme.colors.border};
 `;
 
 export function AdminDashboardPage() {
@@ -108,13 +106,10 @@ export function AdminDashboardPage() {
     <div>
       <Head>
         <div>
-          <PageTitle>Hospital Overview</PageTitle>
-          <PageSubtitle>Real-time operational metrics for City Branch</PageSubtitle>
+          <PageTitle>Company Overview</PageTitle>
+          <PageSubtitle>Real-time operational metrics across every module</PageSubtitle>
         </div>
-        <HeadActions>
-          <DatePill>📅 Today, Oct 24</DatePill>
-          <Button>⬇ Export Report</Button>
-        </HeadActions>
+        <Button>⬇ Export Report</Button>
       </Head>
 
       <Layout>
@@ -125,29 +120,45 @@ export function AdminDashboardPage() {
             ))}
           </StatGrid>
 
-          <ChartsGrid>
-            <ChartCard>
-              <ChartTitle>Patient Registration Trend</ChartTitle>
-              <PatientTrendChart />
-            </ChartCard>
-            <ChartCard>
-              <ChartTitle>Bed Occupancy</ChartTitle>
-              <BedOccupancyWidget />
-            </ChartCard>
-          </ChartsGrid>
+          <PanelCard>
+            <PanelTitle>Recent Sales Orders</PanelTitle>
+            {RECENT_ORDERS.map((order) => (
+              <Row key={order.id}>
+                <span>
+                  {order.reference} — {order.customerName}
+                </span>
+                <span>
+                  {order.amount} <StatusPill $status={order.status}>{order.status}</StatusPill>
+                </span>
+              </Row>
+            ))}
+          </PanelCard>
+
+          <PanelCard>
+            <PanelTitle>Top Selling Products</PanelTitle>
+            {TOP_SELLING_PRODUCTS.map((product) => (
+              <Row key={product.id}>
+                <span>{product.name}</span>
+                <span>
+                  {product.unitsSold} units — {product.revenue}
+                </span>
+              </Row>
+            ))}
+          </PanelCard>
         </MainColumn>
 
         <SideColumn>
-          <EmergencyAlertsPanel />
-          <TodaysAppointmentsPanel />
-          <PendingTasksWidget />
+          <PanelCard>
+            <PanelTitle>Pending Tasks</PanelTitle>
+            {PENDING_TASKS.map((task) => (
+              <Row key={task.id}>
+                <span>{task.label}</span>
+                <span style={{ color: task.overdue ? undefined : undefined }}>{task.note}</span>
+              </Row>
+            ))}
+          </PanelCard>
         </SideColumn>
       </Layout>
     </div>
   );
-}
-*/
-
-export function AdminDashboardPage() {
-  return <h1>Dashboard</h1>;
 }

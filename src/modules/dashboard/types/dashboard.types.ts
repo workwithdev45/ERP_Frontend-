@@ -7,22 +7,19 @@ export interface StatCardData {
   tone?: 'default' | 'danger';
 }
 
-export interface EmergencyAlert {
+export interface RecentOrderEntry {
   id: string;
-  title: string;
-  description: string;
-  timeAgo: string;
-  severity: 'high' | 'medium';
+  reference: string;
+  customerName: string;
+  amount: string;
+  status: 'Paid' | 'Pending' | 'Overdue';
 }
 
-export interface AppointmentEntry {
+export interface TopSellingProduct {
   id: string;
-  time: string;
-  meridiem: string;
-  patientName: string;
-  reason: string;
-  status: 'Checked In' | 'Waiting' | 'Scheduled';
-  active?: boolean;
+  name: string;
+  unitsSold: number;
+  revenue: string;
 }
 
 export interface AdminTask {

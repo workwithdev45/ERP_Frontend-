@@ -30,8 +30,6 @@ export interface UserProfileResponse {
   firstName: string;
   lastName: string;
   phoneNumber: string | null;
-  branchId: string | null;
-  branchName: string | null;
   status: string;
   roles: string[];
   permissions: string[];

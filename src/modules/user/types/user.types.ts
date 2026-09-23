@@ -1,0 +1,46 @@
+export type UserStatus = 'ACTIVE' | 'INACTIVE' | 'SUSPENDED' | 'PENDING_VERIFICATION';
+
+export interface UserSummary {
+  id: number;
+  tenantId: string;
+  tenantName: string;
+  username: string;
+  email: string;
+  firstName: string;
+  lastName: string;
+  phoneNumber: string | null;
+  status: UserStatus;
+  roles: string[];
+  createdAt: string;
+}
+
+export interface CreateUserRequest {
+  username: string;
+  email: string;
+  password: string;
+  firstName: string;
+  lastName: string;
+  phoneNumber?: string;
+  roleIds: number[];
+}
+
+export interface InviteUserRequest {
+  email: string;
+  firstName: string;
+  lastName: string;
+  roleIds: number[];
+}
+
+export interface UpdateUserRequest {
+  firstName?: string;
+  lastName?: string;
+  phoneNumber?: string;
+  status?: UserStatus;
+  roleIds?: number[];
+}
+
+export interface AcceptUserInviteRequest {
+  email: string;
+  inviteToken: string;
+  password: string;
+}
