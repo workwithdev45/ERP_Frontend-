@@ -26,3 +26,6 @@ yarn-error.log*
 *.sw?
 
 .DS_Store
+
+# TypeScript incremental build cache
+*.tsbuildinfo
