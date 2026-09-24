@@ -62,9 +62,15 @@ export interface FindCompanyRequest {
   userEmail: string;
 }
 
+export interface WorkspaceSummary {
+  portalId: string;
+  name: string;
+}
+
 export interface FindCompanyResponse {
   error: boolean;
   message: string;
+  data?: WorkspaceSummary[];
 }
 
 export interface ApiErrorResponse {

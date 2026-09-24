@@ -39,3 +39,13 @@ export interface ApiErrorResponse {
   error: boolean;
   message: string;
 }
+
+export interface ForgotPasswordRequest {
+  email: string;
+  portalId: string;
+}
+
+export interface ResetPasswordRequest {
+  token: string;
+  newPassword: string;
+}

@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import styled from 'styled-components';
+import { ArrowLeftOutlined } from '@ant-design/icons';
 import { Card } from '@/components/common/Card/Card';
 import { PermissionMatrix } from '@/modules/accesscontrol/components/PermissionMatrix';
 import { rbacService } from '@/modules/accesscontrol/services/rbacService';
@@ -10,6 +11,9 @@ import { UserStatusBadge } from '../components/UserStatusBadge';
 import type { UserSummary } from '../types/user.types';
 
 const BackLink = styled.button`
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
   background: none;
   border: none;
   color: ${({ theme }) => theme.colors.textSecondary};
@@ -92,7 +96,7 @@ export function UserDetailPage() {
   return (
     <div>
       <BackLink type="button" onClick={() => navigate('/settings/users')}>
-        ← Back to Users
+        <ArrowLeftOutlined /> Back to Users
       </BackLink>
       <Head>
         <Name>

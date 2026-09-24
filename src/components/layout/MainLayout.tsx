@@ -19,7 +19,14 @@ const Main = styled.div`
 
 const Content = styled.main`
   flex: 1;
+  width: 100%;
+  max-width: ${({ theme }) => theme.layout.contentMaxWidth};
+  margin: 0 auto;
   padding: ${({ theme }) => theme.space[6]};
+
+  @media (max-width: 900px) {
+    padding: ${({ theme }) => theme.space[4]};
+  }
 `;
 
 export function MainLayout() {

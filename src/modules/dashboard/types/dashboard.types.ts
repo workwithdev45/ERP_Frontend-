@@ -1,10 +1,17 @@
+import type { NavIcon } from '@/config/navigation.config';
+
+export type StatTone = 'default' | 'danger' | 'warning' | 'success';
+
 export interface StatCardData {
   key: string;
   label: string;
   value: string;
   suffix?: string;
   trend?: string;
-  tone?: 'default' | 'danger';
+  trendDirection?: 'up' | 'down';
+  hint?: string;
+  icon?: NavIcon;
+  tone?: StatTone;
 }
 
 export interface RecentOrderEntry {
@@ -27,4 +34,9 @@ export interface AdminTask {
   label: string;
   note: string;
   overdue?: boolean;
+}
+
+export interface SalesTrendPoint {
+  day: string;
+  value: number;
 }

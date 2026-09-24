@@ -1,64 +1,135 @@
+import type { ReactNode } from 'react';
 import styled from 'styled-components';
+import { CheckCircleOutlined, ClockCircleOutlined } from '@ant-design/icons';
 import { Card } from '@/components/common/Card/Card';
+import { BadgeText } from '@/components/common/Badge/Badge';
+import { PageHeader } from '@/components/common/PageHeader/PageHeader';
 
-const Wrap = styled.div`
+const Panel = styled(Card)`
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  overflow: hidden;
+
+  @media (max-width: 900px) {
+    grid-template-columns: minmax(0, 1fr);
+  }
+`;
+
+const Intro = styled.div`
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: ${({ theme }) => theme.space[4]};
+  padding: ${({ theme }) => theme.space[7]};
+`;
+
+const IconTile = styled.div`
+  width: 52px;
+  height: 52px;
+  border-radius: ${({ theme }) => theme.radius.lg};
   display: flex;
   align-items: center;
   justify-content: center;
-  min-height: 60vh;
+  font-size: 24px;
+  color: ${({ theme }) => theme.colors.primary};
+  background: ${({ theme }) => theme.colors.primaryLight};
+  border: 1px solid ${({ theme }) => theme.colors.primaryBorder};
 `;
 
-const PanelCard = styled(Card)`
-  padding: ${({ theme }) => theme.space[8]};
-  max-width: 480px;
-  text-align: center;
-`;
-
-const IconWrap = styled.div`
-  font-size: 40px;
-  margin-bottom: ${({ theme }) => theme.space[4]};
-`;
-
-const Title = styled.h1`
-  font-size: 20px;
-  font-weight: 700;
-  color: ${({ theme }) => theme.colors.navy};
-  margin-bottom: ${({ theme }) => theme.space[2]};
+const Heading = styled.h2`
+  font-size: ${({ theme }) => theme.fontSize.xl};
+  font-weight: ${({ theme }) => theme.fontWeight.semibold};
 `;
 
 const Description = styled.p`
-  font-size: 14px;
-  color: ${({ theme }) => theme.colors.textSecondary};
+  max-width: 44ch;
+  font-size: ${({ theme }) => theme.fontSize.md};
   line-height: 1.6;
+  color: ${({ theme }) => theme.colors.textSecondary};
 `;
 
-const PhaseBadge = styled.div`
-  display: inline-block;
-  margin-top: ${({ theme }) => theme.space[4]};
-  padding: 4px 12px;
-  border-radius: 999px;
+const Planned = styled.div`
+  padding: ${({ theme }) => theme.space[7]};
   background: ${({ theme }) => theme.colors.bgSubtle};
+  border-left: 1px solid ${({ theme }) => theme.colors.border};
+
+  @media (max-width: 900px) {
+    border-left: none;
+    border-top: 1px solid ${({ theme }) => theme.colors.border};
+  }
+`;
+
+const PlannedLabel = styled.div`
+  margin-bottom: ${({ theme }) => theme.space[3]};
+  font-size: ${({ theme }) => theme.fontSize.xs};
+  font-weight: ${({ theme }) => theme.fontWeight.semibold};
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
   color: ${({ theme }) => theme.colors.textMuted};
-  font-size: 12px;
-  font-weight: 600;
+`;
+
+const FeatureList = styled.ul`
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: ${({ theme }) => theme.space[2]};
+`;
+
+const Feature = styled.li`
+  display: flex;
+  align-items: center;
+  gap: ${({ theme }) => theme.space[3]};
+  padding: ${({ theme }) => theme.space[3]} ${({ theme }) => theme.space[4]};
+  background: ${({ theme }) => theme.colors.bg};
+  border: 1px solid ${({ theme }) => theme.colors.border};
+  border-radius: ${({ theme }) => theme.radius.md};
+  font-size: ${({ theme }) => theme.fontSize.md};
+  font-weight: ${({ theme }) => theme.fontWeight.medium};
+  color: ${({ theme }) => theme.colors.textBody};
+
+  .anticon {
+    color: ${({ theme }) => theme.colors.accent};
+  }
 `;
 
 interface ModulePlaceholderProps {
-  icon: string;
+  icon: ReactNode;
   title: string;
   description: string;
   phase?: string;
+  /** Capabilities planned for this module, listed on the right-hand panel. */
+  features?: string[];
 }
 
-export function ModulePlaceholder({ icon, title, description, phase }: ModulePlaceholderProps) {
+export function ModulePlaceholder({ icon, title, description, phase, features }: ModulePlaceholderProps) {
   return (
-    <Wrap>
-      <PanelCard>
-        <IconWrap>{icon}</IconWrap>
-        <Title>{title}</Title>
-        <Description>{description}</Description>
-        {phase && <PhaseBadge>{phase}</PhaseBadge>}
-      </PanelCard>
-    </Wrap>
+    <div>
+      <PageHeader title={title} eyebrow="Module" />
+      <Panel>
+        <Intro>
+          <IconTile aria-hidden="true">{icon}</IconTile>
+          <Heading>{title} is on the roadmap</Heading>
+          <Description>{description}</Description>
+          {phase && (
+            <BadgeText tone="primary">
+              <ClockCircleOutlined /> {phase}
+            </BadgeText>
+          )}
+        </Intro>
+        {features && features.length > 0 && (
+          <Planned>
+            <PlannedLabel>Planned capabilities</PlannedLabel>
+            <FeatureList>
+              {features.map((feature) => (
+                <Feature key={feature}>
+                  <CheckCircleOutlined />
+                  {feature}
+                </Feature>
+              ))}
+            </FeatureList>
+          </Planned>
+        )}
+      </Panel>
+    </div>
   );
 }

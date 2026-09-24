@@ -1,23 +1,26 @@
 import styled from 'styled-components';
+import { CloseOutlined } from '@ant-design/icons';
 import { Card } from '@/components/common/Card/Card';
 import type { ModalProps } from './Modal.types';
 
 const Overlay = styled.div`
   position: fixed;
   inset: 0;
-  background: rgba(15, 23, 42, 0.45);
+  background: ${({ theme }) => theme.colors.overlay};
   display: flex;
   align-items: flex-start;
   justify-content: center;
-  padding: ${({ theme }) => theme.space[6]} ${({ theme }) => theme.space[4]};
+  padding: 10vh ${({ theme }) => theme.space[4]} ${({ theme }) => theme.space[6]};
   z-index: 100;
   overflow-y: auto;
 `;
 
 const Panel = styled(Card)`
   width: 100%;
-  max-width: 480px;
+  max-width: 520px;
   padding: ${({ theme }) => theme.space[6]};
+  box-shadow: ${({ theme }) => theme.shadow.lg};
+  border-color: transparent;
 `;
 
 const Header = styled.div`
@@ -28,18 +31,29 @@ const Header = styled.div`
 `;
 
 const Title = styled.h2`
-  font-size: 18px;
-  font-weight: 700;
-  color: ${({ theme }) => theme.colors.navy};
+  font-size: ${({ theme }) => theme.fontSize.xl};
+  font-weight: ${({ theme }) => theme.fontWeight.semibold};
+  color: ${({ theme }) => theme.colors.textStrong};
 `;
 
 const CloseButton = styled.button`
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   background: none;
   border: none;
-  font-size: 18px;
+  border-radius: ${({ theme }) => theme.radius.md};
+  font-size: 14px;
   line-height: 1;
   color: ${({ theme }) => theme.colors.textMuted};
   cursor: pointer;
+
+  &:hover {
+    background: ${({ theme }) => theme.colors.bgHover};
+    color: ${({ theme }) => theme.colors.text};
+  }
 `;
 
 const Footer = styled.div`
@@ -58,7 +72,7 @@ export function Modal({ open, title, onClose, children, footer }: ModalProps) {
         <Header>
           {title && <Title>{title}</Title>}
           <CloseButton type="button" aria-label="Close" onClick={onClose}>
-            ✕
+            <CloseOutlined />
           </CloseButton>
         </Header>
         {children}

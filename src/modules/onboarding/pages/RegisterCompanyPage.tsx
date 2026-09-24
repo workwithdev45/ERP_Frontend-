@@ -1,6 +1,7 @@
 import { useState, type FormEvent } from 'react';
 import { useNavigate } from 'react-router-dom';
 import styled from 'styled-components';
+import { MailOutlined, PhoneOutlined } from '@ant-design/icons';
 import { isAxiosError } from 'axios';
 import { Button } from '@/components/common/Button/Button';
 import { Input } from '@/components/common/Input/Input';
@@ -89,7 +90,7 @@ export function RegisterCompanyPage() {
           type="email"
           label="Administrator email"
           placeholder="admin@acmetraders.in"
-          prefixIcon="✉"
+          prefixIcon={<MailOutlined />}
           value={adminEmail}
           onChange={(e) => setAdminEmail(e.target.value)}
           required
@@ -101,7 +102,7 @@ export function RegisterCompanyPage() {
           placeholder="90000 00000"
           prefixBadge={
             <>
-              <span>🇮🇳</span> +91
+              <PhoneOutlined /> +91
             </>
           }
           value={adminPhone}

@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import styled from 'styled-components';
+import { CheckCircleOutlined, CheckOutlined } from '@ant-design/icons';
 import { isAxiosError } from 'axios';
 import { BadgeText } from '@/components/common/Badge/Badge';
 import { Button } from '@/components/common/Button/Button';
@@ -35,6 +36,9 @@ const Muted = styled.span`
 `;
 
 const AvailabilityHint = styled.p<{ $tone: 'ok' | 'bad' | 'neutral' }>`
+  display: flex;
+  align-items: center;
+  gap: 6px;
   font-size: 13px;
   color: ${({ theme, $tone }) =>
     $tone === 'ok' ? theme.colors.success : $tone === 'bad' ? theme.colors.danger : theme.colors.textMuted};
@@ -116,25 +120,27 @@ export function ClaimPortalPage() {
   } else if (checking) {
     hint = { text: 'Checking availability…', tone: 'neutral' };
   } else if (available === true) {
-    hint = { text: `Your portal will be live at ${portalId}.${APP_CONFIG.portalDomain}`, tone: 'ok' };
+    hint = { text: `Your workspace will be live at ${portalId}.${APP_CONFIG.portalDomain}`, tone: 'ok' };
   } else if (available === false) {
-    hint = { text: 'That portal ID is already taken.', tone: 'bad' };
+    hint = { text: 'That workspace ID is already taken.', tone: 'bad' };
   }
 
   return (
     <OnboardingLayout
-      title="Claim your company's portal"
+      title="Claim your company's workspace"
       subtitle="Choose a unique ID for your company's ERP workspace."
     >
       <Form onSubmit={handleSubmit}>
         <Input
           id="portalId"
-          label="Portal ID"
+          label="Workspace ID"
           placeholder="acme-traders"
           suffix={`.${APP_CONFIG.portalDomain}`}
           suffixBadge={
             available === true ? (
-              <BadgeText tone="success">✓ Available</BadgeText>
+              <BadgeText tone="success">
+                <CheckOutlined /> Available
+              </BadgeText>
             ) : available === false ? (
               <BadgeText tone="danger">Taken</BadgeText>
             ) : undefined
@@ -145,7 +151,7 @@ export function ClaimPortalPage() {
         />
         {hint && (
           <AvailabilityHint $tone={hint.tone}>
-            {hint.tone === 'ok' && '✓ '}
+            {hint.tone === 'ok' && <CheckCircleOutlined />}
             {hint.text}
           </AvailabilityHint>
         )}
@@ -159,7 +165,7 @@ export function ClaimPortalPage() {
         </CheckboxRow>
         {error && <AvailabilityHint $tone="bad">{error}</AvailabilityHint>}
         <Button type="submit" fullWidth disabled={!canSubmit} loading={submitting}>
-          Reserve this portal
+          Reserve this workspace
         </Button>
       </Form>
     </OnboardingLayout>

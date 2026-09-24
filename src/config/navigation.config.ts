@@ -1,21 +1,81 @@
+import {
+  AppstoreOutlined,
+  AccountBookOutlined,
+  BarChartOutlined,
+  BuildOutlined,
+  InboxOutlined,
+  QuestionCircleOutlined,
+  RiseOutlined,
+  KeyOutlined,
+  SafetyCertificateOutlined,
+  ShoppingCartOutlined,
+  SolutionOutlined,
+  TeamOutlined,
+  UserOutlined,
+} from '@ant-design/icons';
+
+/** Any Ant Design icon component (they all share one type). */
+export type NavIcon = typeof AppstoreOutlined;
+
 export interface NavItem {
   key: string;
   label: string;
-  icon: string;
+  icon: NavIcon;
   path: string;
 }
 
-export const PRIMARY_NAV: NavItem[] = [
-  { key: 'dashboard', label: 'Dashboard', icon: '▦', path: '/dashboard' },
-  { key: 'sales', label: 'Sales', icon: '💰', path: '/sales' },
-  { key: 'purchase', label: 'Purchase', icon: '🛒', path: '/purchase' },
-  { key: 'inventory', label: 'Inventory', icon: '📦', path: '/inventory' },
-  { key: 'production', label: 'Production', icon: '🏭', path: '/production' },
-  { key: 'accounts', label: 'Accounts', icon: '📒', path: '/accounts' },
-  { key: 'crm', label: 'CRM', icon: '🤝', path: '/crm' },
-  { key: 'hr', label: 'HR & Payroll', icon: '🧑‍💼', path: '/hr' },
-  { key: 'reports', label: 'Reports', icon: '📊', path: '/reports' },
-  { key: 'settings', label: 'Settings', icon: '⚙', path: '/settings/users' },
+export interface NavSection {
+  key: string;
+  label: string;
+  items: NavItem[];
+}
+
+export const NAV_SECTIONS: NavSection[] = [
+  {
+    key: 'overview',
+    label: 'Overview',
+    items: [
+      { key: 'dashboard', label: 'Dashboard', icon: AppstoreOutlined, path: '/dashboard' },
+      { key: 'reports', label: 'Reports', icon: BarChartOutlined, path: '/reports' },
+    ],
+  },
+  {
+    key: 'operations',
+    label: 'Operations',
+    items: [
+      { key: 'sales', label: 'Sales', icon: RiseOutlined, path: '/sales' },
+      { key: 'purchase', label: 'Purchase', icon: ShoppingCartOutlined, path: '/purchase' },
+      { key: 'inventory', label: 'Inventory', icon: InboxOutlined, path: '/inventory' },
+      { key: 'production', label: 'Production', icon: BuildOutlined, path: '/production' },
+    ],
+  },
+  {
+    key: 'finance',
+    label: 'Finance & People',
+    items: [
+      { key: 'accounts', label: 'Accounts', icon: AccountBookOutlined, path: '/accounts' },
+      { key: 'crm', label: 'CRM', icon: SolutionOutlined, path: '/crm' },
+      { key: 'hr', label: 'HR & Payroll', icon: TeamOutlined, path: '/hr' },
+    ],
+  },
+  {
+    key: 'admin',
+    label: 'Administration',
+    items: [
+      { key: 'members', label: 'Members', icon: UserOutlined, path: '/settings/users' },
+      { key: 'roles', label: 'Roles', icon: SafetyCertificateOutlined, path: '/settings/roles' },
+      { key: 'permissions', label: 'Permissions', icon: KeyOutlined, path: '/settings/permissions' },
+    ],
+  },
 ];
 
-export const SECONDARY_NAV: NavItem[] = [{ key: 'help', label: 'Help', icon: '❓', path: '/help' }];
+export const PRIMARY_NAV: NavItem[] = NAV_SECTIONS.flatMap((section) => section.items);
+
+export const SECONDARY_NAV: NavItem[] = [{ key: 'help', label: 'Help & Support', icon: QuestionCircleOutlined, path: '/help' }];
+
+/** The nav entry that owns a pathname: exact match first, then the longest path prefix (`/settings/users/12` → Members). */
+export function findNavItem(pathname: string): NavItem | undefined {
+  return [...PRIMARY_NAV, ...SECONDARY_NAV]
+    .filter((item) => pathname === item.path || pathname.startsWith(`${item.path}/`))
+    .sort((a, b) => b.path.length - a.path.length)[0];
+}

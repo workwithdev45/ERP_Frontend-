@@ -16,14 +16,14 @@ export function GetStartedPage() {
     >
       <OptionRow
         icon={<SearchOutlined />}
-        iconBg="#0f172a"
-        title="Find my company's portal"
-        description="Join or sign in to an existing company portal."
+        iconBg="#0B1B34"
+        title="Find my company's workspace"
+        description="Join or sign in to an existing company workspace."
         onClick={() => navigate(ROUTE_PATHS.onboarding.findCompany)}
       />
       <OptionRow
         icon={<PlusOutlined />}
-        iconBg="#14b8a6"
+        iconBg="#1F5AD6"
         title="Register a new company"
         description="Get your company set up on MSME ERP."
         onClick={() => navigate(ROUTE_PATHS.onboarding.register)}

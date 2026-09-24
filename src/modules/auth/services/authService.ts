@@ -2,9 +2,11 @@ import { apiClient } from '@/api/apiClient';
 import { API_ENDPOINTS } from '@/api/apiEndpoints';
 import type { ApiResponse } from '@/types/api.types';
 import type {
+  ForgotPasswordRequest,
   LoginRequest,
   LoginResponse,
   RefreshTokenRequest,
+  ResetPasswordRequest,
   UserProfileResponse,
 } from '../types/auth.types';
 
@@ -18,4 +20,16 @@ export const authService = {
 
   refreshToken: (payload: RefreshTokenRequest) =>
     apiClient.post<ApiResponse<LoginResponse>>(API_ENDPOINTS.auth.refreshToken, payload),
+
+  forgotPassword: ({ email, portalId }: ForgotPasswordRequest) =>
+    apiClient.post<ApiResponse<null>>(
+      API_ENDPOINTS.auth.forgotPassword,
+      { email },
+      { headers: { 'X-Tenant-ID': portalId } },
+    ),
+
+  resetPassword: (payload: ResetPasswordRequest, portalId: string) =>
+    apiClient.post<ApiResponse<null>>(API_ENDPOINTS.auth.resetPassword, payload, {
+      headers: portalId ? { 'X-Tenant-ID': portalId } : undefined,
+    }),
 };

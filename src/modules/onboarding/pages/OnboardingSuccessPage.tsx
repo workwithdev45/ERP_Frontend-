@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import styled from 'styled-components';
+import { CheckOutlined } from '@ant-design/icons';
 import { BadgeText } from '@/components/common/Badge/Badge';
 import { Button } from '@/components/common/Button/Button';
 import { ROUTE_PATHS } from '@/routes/routePaths';
@@ -114,9 +115,13 @@ export function OnboardingSuccessPage() {
     <OnboardingLayout>
       <Center>
         <StatusBadgeRow>
-          <BadgeText tone="success">● REDIRECTING</BadgeText>
+          <BadgeText tone="success" dot>
+            REDIRECTING
+          </BadgeText>
         </StatusBadgeRow>
-        <CheckCircle>✓</CheckCircle>
+        <CheckCircle>
+          <CheckOutlined />
+        </CheckCircle>
         <Heading>Your company workspace is live!</Heading>
         <Description>
           Redirecting you to <strong>{portalId}</strong> — Sales, Purchase, Inventory, and every other module are

@@ -14,9 +14,13 @@ export const GlobalStyle = createGlobalStyle`
 
   body {
     font-family: ${({ theme }) => theme.font.family};
+    font-size: ${({ theme }) => theme.fontSize.md};
+    line-height: 1.5;
     color: ${({ theme }) => theme.colors.text};
-    background: ${({ theme }) => theme.colors.bgSubtle};
+    background: ${({ theme }) => theme.colors.bgPage};
     -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    text-rendering: optimizeLegibility;
   }
 
   #root {
@@ -24,11 +28,62 @@ export const GlobalStyle = createGlobalStyle`
   }
 
   button,
-  input {
+  input,
+  select,
+  textarea {
     font-family: inherit;
+    font-size: inherit;
+    color: inherit;
   }
 
   a {
     color: inherit;
+  }
+
+  h1, h2, h3, h4 {
+    font-family: ${({ theme }) => theme.font.display};
+    color: ${({ theme }) => theme.colors.textStrong};
+    line-height: 1.25;
+  }
+
+  /* Figures in tables and KPIs line up in columns. */
+  table,
+  .num {
+    font-variant-numeric: tabular-nums;
+  }
+
+  :focus-visible {
+    outline: 2px solid ${({ theme }) => theme.colors.borderFocus};
+    outline-offset: 2px;
+  }
+
+  ::selection {
+    background: ${({ theme }) => theme.colors.primarySoft};
+    color: ${({ theme }) => theme.colors.text};
+  }
+
+  ::-webkit-scrollbar {
+    width: 10px;
+    height: 10px;
+  }
+
+  ::-webkit-scrollbar-thumb {
+    background: ${({ theme }) => theme.colors.borderStrong};
+    border-radius: 999px;
+    border: 2px solid transparent;
+    background-clip: content-box;
+  }
+
+  ::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+      transition-duration: 0.01ms !important;
+      animation-duration: 0.01ms !important;
+    }
   }
 `;

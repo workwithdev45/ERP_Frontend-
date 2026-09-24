@@ -5,43 +5,56 @@ import type { InputProps } from './Input.types';
 const Field = styled.div`
   display: flex;
   flex-direction: column;
-  gap: ${({ theme }) => theme.space[2]};
+  gap: 6px;
 `;
 
 const Label = styled.label`
-  font-size: 12px;
-  font-weight: 600;
-  letter-spacing: 0.04em;
-  text-transform: uppercase;
-  color: ${({ theme }) => theme.colors.textSecondary};
+  font-size: ${({ theme }) => theme.fontSize.sm};
+  font-weight: ${({ theme }) => theme.fontWeight.medium};
+  color: ${({ theme }) => theme.colors.textBody};
 `;
 
 const InputRow = styled.div<{ $hasError?: boolean }>`
   display: flex;
   align-items: center;
   overflow: hidden;
-  border: 1px solid ${({ theme, $hasError }) => ($hasError ? theme.colors.danger : theme.colors.border)};
-  border-radius: 999px;
+  border: 1px solid ${({ theme, $hasError }) => ($hasError ? theme.colors.danger : theme.colors.borderStrong)};
+  border-radius: ${({ theme }) => theme.radius.md};
   background: ${({ theme }) => theme.colors.bg};
-  transition: border-color ${({ theme }) => theme.transition.fast};
+  box-shadow: ${({ theme }) => theme.shadow.xs};
+  transition:
+    border-color ${({ theme }) => theme.transition.fast},
+    box-shadow ${({ theme }) => theme.transition.fast};
+
+  &:hover {
+    border-color: ${({ theme, $hasError }) => ($hasError ? theme.colors.danger : theme.colors.textDisabled)};
+  }
 
   &:focus-within {
-    border-color: ${({ theme, $hasError }) => (($hasError ? theme.colors.danger : theme.colors.borderFocus))};
+    border-color: ${({ theme, $hasError }) => ($hasError ? theme.colors.danger : theme.colors.borderFocus)};
+    box-shadow: ${({ theme, $hasError }) => ($hasError ? '0 0 0 3px rgba(200, 50, 43, 0.2)' : theme.shadow.focus)};
   }
 `;
 
 const StyledInput = styled.input`
   flex: 1;
-  height: 44px;
-  padding: 0 ${({ theme }) => theme.space[4]};
+  min-width: 0;
+  height: 40px;
+  padding: 0 ${({ theme }) => theme.space[3]};
   border: none;
   background: transparent;
-  font-size: 15px;
+  font-size: ${({ theme }) => theme.fontSize.md};
   color: ${({ theme }) => theme.colors.text};
   outline: none;
 
   &::placeholder {
     color: ${({ theme }) => theme.colors.textMuted};
+  }
+
+  /* The surrounding InputRow draws the focus ring; don't double it on the inner field. */
+  &:focus,
+  &:focus-visible {
+    outline: none;
   }
 `;
 
@@ -59,7 +72,11 @@ const SuffixBadgeWrap = styled.span`
 const PrefixIcon = styled.span`
   display: flex;
   align-items: center;
-  padding-left: ${({ theme }) => theme.space[4]};
+  justify-content: center;
+  width: 20px;
+  margin-left: ${({ theme }) => theme.space[3]};
+  font-size: 16px;
+  line-height: 1;
   color: ${({ theme }) => theme.colors.textMuted};
 `;
 
@@ -86,12 +103,12 @@ const SuffixIcon = styled.button`
 `;
 
 const HintText = styled.span`
-  font-size: 13px;
+  font-size: ${({ theme }) => theme.fontSize.xs};
   color: ${({ theme }) => theme.colors.textMuted};
 `;
 
 const ErrorText = styled.span`
-  font-size: 13px;
+  font-size: ${({ theme }) => theme.fontSize.xs};
   color: ${({ theme }) => theme.colors.danger};
 `;
 

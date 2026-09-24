@@ -1,12 +1,41 @@
-import type { AdminTask, RecentOrderEntry, StatCardData, TopSellingProduct } from '../types/dashboard.types';
+import {
+  AlertOutlined,
+  FileDoneOutlined,
+  FundOutlined,
+  InboxOutlined,
+  RiseOutlined,
+  WalletOutlined,
+} from '@ant-design/icons';
+import type {
+  AdminTask,
+  RecentOrderEntry,
+  SalesTrendPoint,
+  StatCardData,
+  TopSellingProduct,
+} from '../types/dashboard.types';
 
 export const DASHBOARD_STATS: StatCardData[] = [
-  { key: 'total-sales', label: 'Total Sales (MTD)', value: '₹8,42,500', trend: '↗12.4%' },
-  { key: 'open-orders', label: 'Open Sales Orders', value: '34' },
-  { key: 'purchase-due', label: 'Purchase Bills Due', value: '9', tone: 'danger' },
-  { key: 'low-stock', label: 'Low Stock Items', value: '17', tone: 'danger' },
-  { key: 'inventory-value', label: 'Inventory Value', value: '₹21,60,000' },
-  { key: 'receivables', label: 'Receivables', value: '₹3,12,400' },
+  {
+    key: 'total-sales',
+    label: 'Total Sales (MTD)',
+    value: '₹8,42,500',
+    trend: '12.4%',
+    trendDirection: 'up',
+    hint: 'vs last month',
+    icon: RiseOutlined,
+  },
+  { key: 'open-orders', label: 'Open Sales Orders', value: '34', hint: 'Not yet fulfilled', icon: FileDoneOutlined },
+  {
+    key: 'purchase-due',
+    label: 'Purchase Bills Due',
+    value: '9',
+    hint: 'Awaiting payment',
+    icon: WalletOutlined,
+    tone: 'danger',
+  },
+  { key: 'low-stock', label: 'Low Stock Items', value: '17', hint: 'Below reorder level', icon: AlertOutlined, tone: 'warning' },
+  { key: 'inventory-value', label: 'Inventory Value', value: '₹21,60,000', hint: 'Stock on hand', icon: InboxOutlined },
+  { key: 'receivables', label: 'Receivables', value: '₹3,12,400', hint: 'Outstanding from customers', icon: FundOutlined },
 ];
 
 export const RECENT_ORDERS: RecentOrderEntry[] = [
@@ -28,7 +57,7 @@ export const PENDING_TASKS: AdminTask[] = [
   { id: 'task-3', label: 'Reconcile last week’s bank statement', note: 'Due Tomorrow' },
 ];
 
-export const SALES_TREND = [
+export const SALES_TREND: SalesTrendPoint[] = [
   { day: 'Mon', value: 38 },
   { day: 'Tue', value: 46 },
   { day: 'Wed', value: 29 },

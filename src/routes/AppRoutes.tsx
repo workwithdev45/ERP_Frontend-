@@ -1,6 +1,8 @@
 import { createBrowserRouter, Navigate, Outlet } from 'react-router-dom';
 import { MainLayout } from '@/components/layout/MainLayout';
+import { ForgotPasswordPage } from '@/modules/auth/pages/ForgotPasswordPage';
 import { LoginPage } from '@/modules/auth/pages/LoginPage';
+import { ResetPasswordPage } from '@/modules/auth/pages/ResetPasswordPage';
 import { AdminDashboardPage } from '@/modules/dashboard/pages/AdminDashboardPage';
 import { OnboardingProvider } from '@/modules/onboarding/context/OnboardingContext';
 import { GetStartedPage } from '@/modules/onboarding/pages/GetStartedPage';
@@ -48,7 +50,7 @@ export const appRouter = createBrowserRouter([
       { path: 'find-company', element: <FindCompanyPage /> },
       { path: 'register', element: <RegisterCompanyPage /> },
       { path: 'verify-otp', element: <VerifyOtpPage /> },
-      { path: 'claim-portal', element: <ClaimPortalPage /> },
+      { path: 'claim-workspace', element: <ClaimPortalPage /> },
       { path: 'set-password', element: <SetPasswordPage /> },
       { path: 'success', element: <OnboardingSuccessPage /> },
     ],
@@ -56,6 +58,14 @@ export const appRouter = createBrowserRouter([
   {
     path: ROUTE_PATHS.auth.login,
     element: <LoginPage />,
+  },
+  {
+    path: ROUTE_PATHS.auth.forgotPassword,
+    element: <ForgotPasswordPage />,
+  },
+  {
+    path: ROUTE_PATHS.auth.resetPassword,
+    element: <ResetPasswordPage />,
   },
   {
     path: ROUTE_PATHS.acceptInvite,

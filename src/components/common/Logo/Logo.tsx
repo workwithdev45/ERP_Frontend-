@@ -10,8 +10,8 @@ const Wrap = styled.div`
 const Mark = styled.div`
   width: 34px;
   height: 34px;
-  border-radius: 10px;
-  background: ${({ theme }) => theme.colors.accent};
+  border-radius: ${({ theme }) => theme.radius.md};
+  background: linear-gradient(135deg, ${({ theme }) => theme.colors.primary} 0%, ${({ theme }) => theme.palette.cobalt500} 100%);
   color: #fff;
   display: flex;
   align-items: center;
@@ -29,7 +29,7 @@ const Name = styled.span`
 `;
 
 const NameAccent = styled.span`
-  color: ${({ theme }) => theme.colors.accent};
+  color: ${({ theme }) => theme.colors.primary};
 `;
 
 export function Logo() {

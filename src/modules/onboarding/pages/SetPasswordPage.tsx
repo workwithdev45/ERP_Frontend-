@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import styled from 'styled-components';
+import { EyeInvisibleOutlined, EyeOutlined } from '@ant-design/icons';
 import { isAxiosError } from 'axios';
 import { Button } from '@/components/common/Button/Button';
 import { Input } from '@/components/common/Input/Input';
@@ -108,7 +109,7 @@ export function SetPasswordPage() {
           placeholder="••••••••"
           value={password}
           onChange={(e) => setPassword(e.target.value)}
-          suffixIcon={showPassword ? '🙈' : '👁'}
+          suffixIcon={showPassword ? <EyeInvisibleOutlined /> : <EyeOutlined />}
           onSuffixIconClick={() => setShowPassword((prev) => !prev)}
           hint="At least 8 characters, with at least one number."
           required
@@ -120,7 +121,7 @@ export function SetPasswordPage() {
         )}
         {error && <ErrorText>{error}</ErrorText>}
         <Button type="submit" fullWidth disabled={!isValid} loading={submitting}>
-          Create my company portal
+          Create my company workspace
         </Button>
       </Form>
     </OnboardingLayout>
