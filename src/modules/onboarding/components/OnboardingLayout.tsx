@@ -5,6 +5,7 @@ import { LockOutlined, SafetyCertificateOutlined } from '@ant-design/icons';
 import { Card } from '@/components/common/Card/Card';
 import { Logo } from '@/components/common/Logo/Logo';
 import { ROUTE_PATHS } from '@/routes/routePaths';
+import { ThemeToggle } from '@/components/common/ThemeToggle/ThemeToggle';
 import { OnboardingBackdrop } from './OnboardingBackdrop';
 
 const Page = styled.div`
@@ -16,9 +17,16 @@ const Page = styled.div`
   justify-content: center;
   padding: ${({ theme }) => theme.space[8]} ${({ theme }) => theme.space[4]};
   background:
-    radial-gradient(1200px 600px at 50% -10%, rgba(31, 90, 214, 0.10), transparent 60%),
-    radial-gradient(800px 500px at 100% 100%, rgba(11, 122, 110, 0.07), transparent 60%),
+    radial-gradient(1200px 600px at 50% -10%, ${({ theme }) => theme.colors.decorGlow}, transparent 60%),
+    radial-gradient(800px 500px at 100% 100%, ${({ theme }) => theme.colors.decorGlowAlt}, transparent 60%),
     ${({ theme }) => theme.colors.bgPage};
+`;
+
+const CornerToggle = styled(ThemeToggle)`
+  position: absolute;
+  top: ${({ theme }) => theme.space[4]};
+  right: ${({ theme }) => theme.space[4]};
+  z-index: 2;
 `;
 
 const Content = styled.div`
@@ -40,7 +48,7 @@ const Panel = styled(Card)`
   width: 100%;
   overflow: hidden;
   border-radius: ${({ theme }) => theme.radius.xl};
-  border-color: rgba(16, 24, 40, 0.06);
+  border-color: ${({ theme }) => theme.colors.border};
   padding: ${({ theme }) => theme.space[7]} ${({ theme }) => theme.space[6]} ${({ theme }) => theme.space[6]};
   box-shadow:
     0 1px 2px rgba(16, 24, 40, 0.04),
@@ -52,7 +60,7 @@ const Panel = styled(Card)`
     position: absolute;
     inset: 0 0 auto 0;
     height: 4px;
-    background: linear-gradient(90deg, ${({ theme }) => theme.colors.primary} 0%, ${({ theme }) => theme.palette.cobalt500} 55%, ${({ theme }) => theme.colors.accent} 100%);
+    background: linear-gradient(90deg, ${({ theme }) => theme.colors.primaryFill} 0%, ${({ theme }) => theme.palette.cobalt500} 55%, ${({ theme }) => theme.colors.accent} 100%);
   }
 
   @media (max-width: 520px) {
@@ -141,6 +149,7 @@ export function OnboardingLayout({ title, subtitle, showTrustBadges, showGlow, c
   return (
     <Page>
       <OnboardingBackdrop showGlow={showGlow} />
+      <CornerToggle />
       <Content>
         <LogoRow>
           <Logo />

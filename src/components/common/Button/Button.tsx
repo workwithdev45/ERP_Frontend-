@@ -3,40 +3,40 @@ import type { ButtonProps, ButtonSize, ButtonVariant } from './Button.types';
 
 const variantStyles: Record<ButtonVariant, ReturnType<typeof css>> = {
   primary: css`
-    background: ${({ theme }) => theme.colors.primary};
+    background: ${({ theme }) => theme.colors.primaryFill};
     color: ${({ theme }) => theme.colors.textOnPrimary};
-    border: 1px solid ${({ theme }) => theme.colors.primary};
+    border: 1px solid ${({ theme }) => theme.colors.primaryFill};
     box-shadow: ${({ theme }) => theme.shadow.xs};
 
     &:hover:not(:disabled) {
-      background: ${({ theme }) => theme.colors.primaryDark};
-      border-color: ${({ theme }) => theme.colors.primaryDark};
+      background: ${({ theme }) => theme.colors.primaryFillHover};
+      border-color: ${({ theme }) => theme.colors.primaryFillHover};
     }
 
     &:active:not(:disabled) {
-      background: ${({ theme }) => theme.colors.primaryDarker};
+      background: ${({ theme }) => theme.colors.primaryFillActive};
     }
   `,
   success: css`
-    background: ${({ theme }) => theme.colors.accent};
+    background: ${({ theme }) => theme.colors.accentFill};
     color: ${({ theme }) => theme.colors.textOnPrimary};
-    border: 1px solid ${({ theme }) => theme.colors.accent};
+    border: 1px solid ${({ theme }) => theme.colors.accentFill};
     box-shadow: ${({ theme }) => theme.shadow.xs};
 
     &:hover:not(:disabled) {
-      background: ${({ theme }) => theme.colors.accentDark};
-      border-color: ${({ theme }) => theme.colors.accentDark};
+      background: ${({ theme }) => theme.colors.accentFillHover};
+      border-color: ${({ theme }) => theme.colors.accentFillHover};
     }
   `,
   danger: css`
-    background: ${({ theme }) => theme.colors.danger};
+    background: ${({ theme }) => theme.colors.dangerFill};
     color: ${({ theme }) => theme.colors.textOnPrimary};
-    border: 1px solid ${({ theme }) => theme.colors.danger};
+    border: 1px solid ${({ theme }) => theme.colors.dangerFill};
     box-shadow: ${({ theme }) => theme.shadow.xs};
 
     &:hover:not(:disabled) {
-      background: ${({ theme }) => theme.colors.dangerDark};
-      border-color: ${({ theme }) => theme.colors.dangerDark};
+      background: ${({ theme }) => theme.colors.dangerFillHover};
+      border-color: ${({ theme }) => theme.colors.dangerFillHover};
     }
   `,
   secondary: css`

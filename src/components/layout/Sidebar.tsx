@@ -56,7 +56,7 @@ const BrandMark = styled.div`
   width: 36px;
   height: 36px;
   border-radius: ${({ theme }) => theme.radius.md};
-  background: linear-gradient(135deg, ${({ theme }) => theme.colors.primary} 0%, ${({ theme }) => theme.palette.cobalt500} 100%);
+  background: linear-gradient(135deg, ${({ theme }) => theme.colors.primaryFill} 0%, ${({ theme }) => theme.palette.cobalt500} 100%);
   color: ${({ theme }) => theme.colors.textOnPrimary};
   display: flex;
   align-items: center;

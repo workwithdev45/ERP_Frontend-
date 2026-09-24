@@ -57,6 +57,39 @@ Use `theme.chart` in order: `#1F5AD6`, `#0E9384`, `#E08A1E`, `#6A4BE0`, `#D1453B
 For single-series bar charts, draw history in `palette.cobalt200` (`#B9CDFB`) and the
 current/highlighted bar in `primary`.
 
+## Dark theme
+
+Users switch with the sun/moon button (app header, and top-right on sign-in/onboarding screens).
+The choice is saved per device (`localStorage['erp.theme']`); on first visit the OS setting is used.
+Both themes live in [`src/styles/theme.ts`](../src/styles/theme.ts) (`lightTheme`, `darkTheme`) and share
+one type, so every component works in both as long as it uses tokens.
+
+**Fill vs text tokens.** On dark surfaces a blue dark enough for white button text is too dark to read
+as link text, so the two are split:
+- `primary`, `danger`, `accent`, `success`… — text, icons, borders, chart marks
+- `primaryFill`, `dangerFill`, `accentFill` (+ `…Hover`, `primaryFillActive`) — solid backgrounds carrying white text
+
+In light mode each fill equals its base colour, so light looks exactly as before.
+
+| Token | Light | Dark |
+|---|---|---|
+| `bgPage` | `#F3F5F8` | `#0B1220` |
+| `bg` (cards) | `#FFFFFF` | `#121B2C` |
+| `bgSubtle` | `#F8F9FB` | `#172234` |
+| `bgMuted` / `bgHover` | `#F2F4F7` | `#1D293D` |
+| `border` / `borderStrong` | `#E4E7EC` / `#D0D5DD` | `#243149` / `#33425C` |
+| `textStrong` | `#101828` | `#EDF1F7` (15.2:1) |
+| `textBody` | `#344054` | `#C5CEDC` (10.9:1) |
+| `textSecondary` | `#475467` | `#A1ADBF` (7.6:1) |
+| `textMuted` | `#667085` | `#8795AB` (5.7:1) |
+| `primary` (text) | `#1F5AD6` | `#7AA2FF` (6.9:1) |
+| `primaryFill` | `#1F5AD6` | `#2F63DB` (white 5.4:1) |
+| `dangerFill` | `#C8322B` | `#D83A34` (white 4.6:1) |
+| `success` / `warning` / `danger` / `info` | `#12805C` / `#B25E09` / `#C8322B` / `#0B6FB8` | `#4FD09A` / `#F2A33A` / `#FF7A73` / `#5AB0F0` |
+| `sidebarBg` | `#0B1B34` | `#0D1626` |
+
+Ratios are against the dark card colour `#121B2C`; badge text-on-tint pairs are all 5.9:1 or higher.
+
 ## Typography
 
 - **UI:** IBM Plex Sans 400 / 500 / 600 / 700

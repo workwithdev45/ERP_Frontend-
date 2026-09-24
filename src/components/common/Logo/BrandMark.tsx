@@ -17,7 +17,7 @@ export function BrandMark({ size = 34 }: BrandMarkProps) {
     <svg width={size} height={size} viewBox="0 0 34 34" aria-hidden="true" focusable="false">
       <defs>
         <linearGradient id={gradientId} x1="0" y1="0" x2="1" y2="1">
-          <stop offset="0" stopColor={theme.colors.primary} />
+          <stop offset="0" stopColor={theme.colors.primaryFill} />
           <stop offset="1" stopColor={theme.palette.cobalt500} />
         </linearGradient>
       </defs>

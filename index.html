@@ -10,6 +10,20 @@
       href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap"
       rel="stylesheet"
     />
+    <script>
+      // Apply the saved (or system) theme before the app loads, so dark mode doesn't flash white.
+      (function () {
+        var mode;
+        try { mode = localStorage.getItem('erp.theme'); } catch (e) {}
+        if (mode !== 'light' && mode !== 'dark') {
+          mode = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+        }
+        var root = document.documentElement;
+        root.dataset.theme = mode;
+        root.style.colorScheme = mode;
+        root.style.background = mode === 'dark' ? '#0B1220' : '#F3F5F8';
+      })();
+    </script>
     <title>MSME ERP</title>
   </head>
   <body>
