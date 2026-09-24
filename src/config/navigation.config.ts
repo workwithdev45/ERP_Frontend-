@@ -22,6 +22,8 @@ export interface NavItem {
   label: string;
   icon: NavIcon;
   path: string;
+  /** Permission needed to see this item (ADMIN always can, matching the backend's @PreAuthorize). Omit for items every signed-in user sees. */
+  permission?: string;
 }
 
 export interface NavSection {
@@ -36,35 +38,35 @@ export const NAV_SECTIONS: NavSection[] = [
     label: 'Overview',
     items: [
       { key: 'dashboard', label: 'Dashboard', icon: AppstoreOutlined, path: '/dashboard' },
-      { key: 'reports', label: 'Reports', icon: BarChartOutlined, path: '/reports' },
+      { key: 'reports', label: 'Reports', icon: BarChartOutlined, path: '/reports', permission: 'REPORTS_VIEW' },
     ],
   },
   {
     key: 'operations',
     label: 'Operations',
     items: [
-      { key: 'sales', label: 'Sales', icon: RiseOutlined, path: '/sales' },
-      { key: 'purchase', label: 'Purchase', icon: ShoppingCartOutlined, path: '/purchase' },
-      { key: 'inventory', label: 'Inventory', icon: InboxOutlined, path: '/inventory' },
-      { key: 'production', label: 'Production', icon: BuildOutlined, path: '/production' },
+      { key: 'sales', label: 'Sales', icon: RiseOutlined, path: '/sales', permission: 'SALES_VIEW' },
+      { key: 'purchase', label: 'Purchase', icon: ShoppingCartOutlined, path: '/purchase', permission: 'PURCHASE_VIEW' },
+      { key: 'inventory', label: 'Inventory', icon: InboxOutlined, path: '/inventory', permission: 'INVENTORY_VIEW' },
+      { key: 'production', label: 'Production', icon: BuildOutlined, path: '/production', permission: 'PRODUCTION_VIEW' },
     ],
   },
   {
     key: 'finance',
     label: 'Finance & People',
     items: [
-      { key: 'accounts', label: 'Accounts', icon: AccountBookOutlined, path: '/accounts' },
-      { key: 'crm', label: 'CRM', icon: SolutionOutlined, path: '/crm' },
-      { key: 'hr', label: 'HR & Payroll', icon: TeamOutlined, path: '/hr' },
+      { key: 'accounts', label: 'Accounts', icon: AccountBookOutlined, path: '/accounts', permission: 'ACCOUNTS_VIEW' },
+      { key: 'crm', label: 'CRM', icon: SolutionOutlined, path: '/crm', permission: 'CRM_VIEW' },
+      { key: 'hr', label: 'HR & Payroll', icon: TeamOutlined, path: '/hr', permission: 'HR_VIEW' },
     ],
   },
   {
     key: 'admin',
     label: 'Administration',
     items: [
-      { key: 'members', label: 'Members', icon: UserOutlined, path: '/settings/users' },
-      { key: 'roles', label: 'Roles', icon: SafetyCertificateOutlined, path: '/settings/roles' },
-      { key: 'permissions', label: 'Permissions', icon: KeyOutlined, path: '/settings/permissions' },
+      { key: 'members', label: 'Members', icon: UserOutlined, path: '/settings/users', permission: 'USER_MANAGE' },
+      { key: 'roles', label: 'Roles', icon: SafetyCertificateOutlined, path: '/settings/roles', permission: 'ROLE_MANAGE' },
+      { key: 'permissions', label: 'Permissions', icon: KeyOutlined, path: '/settings/permissions', permission: 'ROLE_MANAGE' },
     ],
   },
 ];

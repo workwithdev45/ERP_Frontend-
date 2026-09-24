@@ -25,13 +25,15 @@ export interface RoleDto {
   systemRole: boolean;
   permissionIds: number[];
   permissionNames: string[];
+  userCount: number;
+  updatedAt: string;
 }
 
 export interface RoleUpsertRequest {
   name: string;
   description?: string;
   systemRole?: boolean;
-  permissionIds: number[];
+  permissionIds?: number[];
 }
 
 export interface ModulePermission {

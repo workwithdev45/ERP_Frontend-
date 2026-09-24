@@ -1,10 +1,21 @@
-import { useState, type FormEvent } from 'react';
+import { useEffect, useState, type FormEvent } from 'react';
 import styled from 'styled-components';
+import { SendOutlined } from '@ant-design/icons';
 import { Button } from '@/components/common/Button/Button';
+import { FormError } from '@/components/common/FormError/FormError';
 import { Input } from '@/components/common/Input/Input';
 import { Modal } from '@/components/common/Modal/Modal';
+import { TagPicker, type TagPickerOption } from '@/components/common/TagPicker/TagPicker';
+import { DEFAULT_ROLE_LABEL, roleLabel } from '@/modules/accesscontrol/utils/roleLabel';
 import type { RoleDto } from '@/modules/accesscontrol/types/rbac.types';
 import type { InviteUserRequest } from '../types/user.types';
+
+const Intro = styled.p`
+  margin-top: -${({ theme }) => theme.space[3]};
+  margin-bottom: ${({ theme }) => theme.space[5]};
+  font-size: ${({ theme }) => theme.fontSize.sm};
+  color: ${({ theme }) => theme.colors.textSecondary};
+`;
 
 const Form = styled.form`
   display: flex;
@@ -12,32 +23,23 @@ const Form = styled.form`
   gap: ${({ theme }) => theme.space[4]};
 `;
 
-const Field = styled.div`
-  display: flex;
-  flex-direction: column;
-  gap: ${({ theme }) => theme.space[1]};
+const Row = styled.div`
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: ${({ theme }) => theme.space[4]};
+
+  @media (max-width: 480px) {
+    grid-template-columns: 1fr;
+  }
 `;
 
-const Label = styled.label`
-  font-size: 13px;
-  font-weight: 600;
-  color: ${({ theme }) => theme.colors.text};
+const RoleHint = styled.span`
+  margin-top: -${({ theme }) => theme.space[2]};
+  font-size: ${({ theme }) => theme.fontSize.xs};
+  color: ${({ theme }) => theme.colors.textMuted};
 `;
 
-const Select = styled.select`
-  height: 48px;
-  padding: 0 ${({ theme }) => theme.space[4]};
-  border-radius: ${({ theme }) => theme.radius.sm};
-  border: 1px solid ${({ theme }) => theme.colors.border};
-  font-size: 14px;
-  background: ${({ theme }) => theme.colors.bg};
-  color: ${({ theme }) => theme.colors.text};
-`;
-
-const ErrorText = styled.p`
-  color: ${({ theme }) => theme.colors.danger};
-  font-size: 13px;
-`;
+const FORM_ID = 'invite-member-form';
 
 interface UserFormModalProps {
   open: boolean;
@@ -52,57 +54,97 @@ export function UserFormModal({ open, roles, submitting, error, onClose, onSubmi
   const [firstName, setFirstName] = useState('');
   const [lastName, setLastName] = useState('');
   const [email, setEmail] = useState('');
-  const [roleId, setRoleId] = useState<string>(roles[0]?.id ? String(roles[0].id) : '');
+  const [selectedRoles, setSelectedRoles] = useState<TagPickerOption[]>([]);
+
+  useEffect(() => {
+    if (open) {
+      setFirstName('');
+      setLastName('');
+      setEmail('');
+      setSelectedRoles([]);
+    }
+  }, [open]);
+
+  const isValid = !!firstName.trim() && !!lastName.trim() && !!email.trim();
 
   function handleSubmit(e: FormEvent) {
     e.preventDefault();
-    if (!roleId) return;
-    onSubmit({ firstName, lastName, email, roleIds: [Number(roleId)] });
+    if (!isValid) return;
+    onSubmit({
+      firstName: firstName.trim(),
+      lastName: lastName.trim(),
+      email: email.trim(),
+      // No roles picked: leave it to the backend, which assigns All org users.
+      roleIds: selectedRoles.length > 0 ? selectedRoles.map((r) => r.id) : undefined,
+    });
+  }
+
+  const roleOptions = roles.map((r) => ({ id: r.id, label: roleLabel(r.name) }));
+
+  function addRole(roleId: number) {
+    const role = roleOptions.find((r) => r.id === roleId);
+    if (role) setSelectedRoles((prev) => [...prev, role]);
   }
 
   return (
-    <Modal open={open} title="Invite a teammate" onClose={onClose}>
-      <Form onSubmit={handleSubmit}>
-        <Input
-          id="firstName"
-          label="First name"
-          value={firstName}
-          onChange={(e) => setFirstName(e.target.value)}
-          required
-        />
-        <Input
-          id="lastName"
-          label="Last name"
-          value={lastName}
-          onChange={(e) => setLastName(e.target.value)}
-          required
-        />
+    <Modal
+      open={open}
+      title="Invite member"
+      onClose={onClose}
+      footer={
+        <>
+          <Button type="button" variant="secondary" onClick={onClose}>
+            Cancel
+          </Button>
+          <Button type="submit" form={FORM_ID} disabled={!isValid} loading={submitting} leadingIcon={<SendOutlined />}>
+            Send invite
+          </Button>
+        </>
+      }
+    >
+      <Intro>
+        They&apos;ll get an email with a link to set their password and sign in.
+      </Intro>
+      <Form id={FORM_ID} onSubmit={handleSubmit}>
+        <Row>
+          <Input
+            id="firstName"
+            label="First name"
+            placeholder="Sunita"
+            value={firstName}
+            onChange={(e) => setFirstName(e.target.value)}
+            required
+            autoFocus
+          />
+          <Input
+            id="lastName"
+            label="Last name"
+            placeholder="Sharma"
+            value={lastName}
+            onChange={(e) => setLastName(e.target.value)}
+            required
+          />
+        </Row>
         <Input
           id="email"
           type="email"
-          label="Email"
+          label="Work email"
           placeholder="teammate@company.in"
           value={email}
           onChange={(e) => setEmail(e.target.value)}
           required
         />
-        <Field>
-          <Label htmlFor="roleId">Role</Label>
-          <Select id="roleId" value={roleId} onChange={(e) => setRoleId(e.target.value)} required>
-            <option value="" disabled>
-              Select a role
-            </option>
-            {roles.map((role) => (
-              <option key={role.id} value={role.id}>
-                {role.name}
-              </option>
-            ))}
-          </Select>
-        </Field>
-        {error && <ErrorText>{error}</ErrorText>}
-        <Button type="submit" fullWidth loading={submitting}>
-          Send invite
-        </Button>
+        <TagPicker
+          id="inviteRoles"
+          label="Role"
+          selected={selectedRoles}
+          options={roleOptions}
+          placeholder={`${DEFAULT_ROLE_LABEL} (default)`}
+          onAdd={addRole}
+          onRemove={(roleId) => setSelectedRoles((prev) => prev.filter((r) => r.id !== roleId))}
+        />
+        <RoleHint>Leave empty to give them {DEFAULT_ROLE_LABEL}. You can change roles later.</RoleHint>
+        {error && <FormError>{error}</FormError>}
       </Form>
     </Modal>
   );

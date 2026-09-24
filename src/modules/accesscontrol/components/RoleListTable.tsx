@@ -1,87 +1,95 @@
 import styled from 'styled-components';
+import { EditOutlined, SafetyOutlined } from '@ant-design/icons';
 import { BadgeText } from '@/components/common/Badge/Badge';
-import { Button } from '@/components/common/Button/Button';
+import { IconButton, IconLink } from '@/components/common/IconButton/IconButton';
+import { Table, TableScroll, Td, Th } from '@/components/common/Table/Table';
+import { ROUTE_PATHS } from '@/routes/routePaths';
 import type { RoleDto } from '../types/rbac.types';
-
-const Table = styled.table`
-  width: 100%;
-  border-collapse: collapse;
-  font-size: 14px;
-`;
-
-const Th = styled.th`
-  text-align: left;
-  padding: ${({ theme }) => theme.space[3]};
-  border-bottom: 1px solid ${({ theme }) => theme.colors.border};
-  color: ${({ theme }) => theme.colors.textSecondary};
-  font-size: 12px;
-  text-transform: uppercase;
-  letter-spacing: 0.04em;
-`;
-
-const Td = styled.td`
-  padding: ${({ theme }) => theme.space[3]};
-  border-bottom: 1px solid ${({ theme }) => theme.colors.border};
-  vertical-align: top;
-`;
+import { roleLabel } from '../utils/roleLabel';
 
 const RoleName = styled.div`
-  font-weight: 600;
-  color: ${({ theme }) => theme.colors.navy};
+  font-weight: ${({ theme }) => theme.fontWeight.semibold};
+  color: ${({ theme }) => theme.colors.textStrong};
 `;
 
-const Description = styled.div`
-  font-size: 12px;
-  color: ${({ theme }) => theme.colors.textMuted};
+const RoleDescription = styled.div`
   margin-top: 2px;
+  max-width: 420px;
+  font-size: ${({ theme }) => theme.fontSize.xs};
+  color: ${({ theme }) => theme.colors.textMuted};
 `;
 
-const PermissionCount = styled.span`
-  font-size: 13px;
-  color: ${({ theme }) => theme.colors.textSecondary};
+const NameCell = styled(Td)`
+  padding-top: ${({ theme }) => theme.space[3]};
+  padding-bottom: ${({ theme }) => theme.space[3]};
 `;
+
+const Row = styled.tr`
+  cursor: pointer;
+`;
+
+const RowActions = styled.div`
+  display: inline-flex;
+  gap: ${({ theme }) => theme.space[2]};
+`;
+
+function formatDate(value?: string) {
+  if (!value) return '—';
+  const parsed = new Date(value.replace(' ', 'T'));
+  if (Number.isNaN(parsed.getTime())) return '—';
+  return parsed.toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' });
+}
 
 interface RoleListTableProps {
   roles: RoleDto[];
-  onDelete: (role: RoleDto) => void;
+  onEditRole: (role: RoleDto) => void;
 }
 
-export function RoleListTable({ roles, onDelete }: RoleListTableProps) {
+export function RoleListTable({ roles, onEditRole }: RoleListTableProps) {
   return (
-    <Table>
-      <thead>
-        <tr>
-          <Th>Role</Th>
-          <Th>Permissions</Th>
-          <Th>Type</Th>
-          <Th></Th>
-        </tr>
-      </thead>
-      <tbody>
-        {roles.map((role) => (
-          <tr key={role.id}>
-            <Td>
-              <RoleName>{role.name}</RoleName>
-              {role.description && <Description>{role.description}</Description>}
-            </Td>
-            <Td>
-              <PermissionCount>{role.permissionNames.length} granted</PermissionCount>
-            </Td>
-            <Td>
-              <BadgeText tone={role.systemRole ? 'neutral' : 'success'}>
-                {role.systemRole ? 'System' : 'Custom'}
-              </BadgeText>
-            </Td>
-            <Td>
-              {!role.systemRole && (
-                <Button variant="ghost" onClick={() => onDelete(role)}>
-                  Delete
-                </Button>
-              )}
-            </Td>
+    <TableScroll>
+      <Table>
+        <thead>
+          <tr>
+            <Th>Role</Th>
+            <Th>Type</Th>
+            <Th $align="right">Members</Th>
+            <Th>Last updated</Th>
+            <Th $align="right">
+              <span className="sr-only">Actions</span>
+            </Th>
           </tr>
-        ))}
-      </tbody>
-    </Table>
+        </thead>
+        <tbody>
+          {roles.map((role) => (
+            <Row key={role.id} onClick={() => onEditRole(role)}>
+              <NameCell>
+                <RoleName>{roleLabel(role.name)}</RoleName>
+                {role.description && <RoleDescription>{role.description}</RoleDescription>}
+              </NameCell>
+              <Td>
+                <BadgeText tone={role.systemRole ? 'neutral' : 'primary'}>{role.systemRole ? 'System' : 'Custom'}</BadgeText>
+              </Td>
+              <Td $numeric>{role.userCount ?? 0}</Td>
+              <Td $muted>{formatDate(role.updatedAt)}</Td>
+              <Td $align="right" onClick={(e) => e.stopPropagation()}>
+                <RowActions>
+                  <IconLink
+                    to={`${ROUTE_PATHS.settings.permissions}?role=${role.id}`}
+                    aria-label={`Permissions for ${roleLabel(role.name)}`}
+                    title="Permissions"
+                  >
+                    <SafetyOutlined />
+                  </IconLink>
+                  <IconButton aria-label={`Edit ${roleLabel(role.name)}`} title="Edit" onClick={() => onEditRole(role)}>
+                    <EditOutlined />
+                  </IconButton>
+                </RowActions>
+              </Td>
+            </Row>
+          ))}
+        </tbody>
+      </Table>
+    </TableScroll>
   );
 }

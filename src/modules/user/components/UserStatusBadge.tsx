@@ -8,7 +8,7 @@ const TONE_BY_STATUS: Record<UserStatus, 'success' | 'danger' | 'neutral'> = {
   INACTIVE: 'danger',
 };
 
-const LABEL_BY_STATUS: Record<UserStatus, string> = {
+export const LABEL_BY_STATUS: Record<UserStatus, string> = {
   ACTIVE: 'Active',
   PENDING_VERIFICATION: 'Invite pending',
   SUSPENDED: 'Suspended',

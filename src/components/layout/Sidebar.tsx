@@ -2,8 +2,11 @@ import { useState } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import styled, { css } from 'styled-components';
 import { LogoutOutlined, MenuFoldOutlined, MenuUnfoldOutlined } from '@ant-design/icons';
+import { Button } from '@/components/common/Button/Button';
+import { Modal } from '@/components/common/Modal/Modal';
 import { NAV_SECTIONS, SECONDARY_NAV, findNavItem, type NavItem } from '@/config/navigation.config';
 import { useAuth } from '@/context/AuthContext';
+import { usePermission } from '@/hooks/usePermission';
 import { ROUTE_PATHS } from '@/routes/routePaths';
 
 const COLLAPSED_KEY = 'erp.sidebar.collapsed';
@@ -207,6 +210,12 @@ const Footer = styled.div`
   gap: 2px;
 `;
 
+const ConfirmText = styled.p`
+  font-size: ${({ theme }) => theme.fontSize.md};
+  line-height: 1.6;
+  color: ${({ theme }) => theme.colors.textSecondary};
+`;
+
 interface SidebarProps {
   companyName?: string;
 }
@@ -228,7 +237,14 @@ export function Sidebar({ companyName = 'Your Company' }: SidebarProps) {
   const navigate = useNavigate();
   const { pathname } = useLocation();
   const [collapsed, setCollapsed] = useState(readCollapsed);
+  const [confirmLogoutOpen, setConfirmLogoutOpen] = useState(false);
+  const { canAccess } = usePermission();
   const activeKey = findNavItem(pathname)?.key;
+
+  const visibleSections = NAV_SECTIONS.map((section) => ({
+    ...section,
+    items: section.items.filter((item) => !item.permission || canAccess(item.permission)),
+  })).filter((section) => section.items.length > 0);
 
   function toggleCollapsed() {
     setCollapsed((prev) => {
@@ -238,6 +254,7 @@ export function Sidebar({ companyName = 'Your Company' }: SidebarProps) {
   }
 
   function handleLogout() {
+    setConfirmLogoutOpen(false);
     logout();
     navigate(ROUTE_PATHS.auth.login, { replace: true });
   }
@@ -273,7 +290,7 @@ export function Sidebar({ companyName = 'Your Company' }: SidebarProps) {
       </Brand>
 
       <Scroll>
-        {NAV_SECTIONS.map((section) => (
+        {visibleSections.map((section) => (
           <Section key={section.key}>
             <SectionLabel $collapsed={collapsed}>{section.label}</SectionLabel>
             {section.items.map(renderItem)}
@@ -283,7 +300,7 @@ export function Sidebar({ companyName = 'Your Company' }: SidebarProps) {
 
       <Footer>
         {SECONDARY_NAV.map(renderItem)}
-        <ItemButton type="button" $collapsed={collapsed} onClick={handleLogout} title={collapsed ? 'Log out' : undefined}>
+        <ItemButton type="button" $collapsed={collapsed} onClick={() => setConfirmLogoutOpen(true)} title={collapsed ? 'Log out' : undefined}>
           <LogoutOutlined />
           <Label $collapsed={collapsed}>Log out</Label>
         </ItemButton>
@@ -298,6 +315,26 @@ export function Sidebar({ companyName = 'Your Company' }: SidebarProps) {
           <Label $collapsed={collapsed}>Collapse</Label>
         </ItemButton>
       </Footer>
+
+      <Modal
+        open={confirmLogoutOpen}
+        title="Log out?"
+        onClose={() => setConfirmLogoutOpen(false)}
+        footer={
+          <>
+            <Button variant="secondary" onClick={() => setConfirmLogoutOpen(false)} autoFocus>
+              Cancel
+            </Button>
+            <Button variant="danger" leadingIcon={<LogoutOutlined />} onClick={handleLogout}>
+              Log out
+            </Button>
+          </>
+        }
+      >
+        <ConfirmText>
+          You'll be signed out of <strong>{companyName}</strong> and need to sign in again to continue.
+        </ConfirmText>
+      </Modal>
     </Rail>
   );
 }

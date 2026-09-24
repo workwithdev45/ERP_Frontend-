@@ -37,4 +37,15 @@ export const rbacService = {
 
   revokeModulePermission: (userId: number, moduleCode: ModuleCode) =>
     apiClient.delete<ApiResponse<void>>(API_ENDPOINTS.users.modulePermission(userId, moduleCode)),
+
+  getRolePermissions: (roleId: number) =>
+    apiClient.get<ApiResponse<ModulePermission[]>>(API_ENDPOINTS.roles.permissions(roleId)),
+
+  assignRoleModulePermission: (roleId: number, moduleCode: ModuleCode, actions: PermissionAction[]) =>
+    apiClient.put<ApiResponse<ModulePermission>>(API_ENDPOINTS.roles.modulePermission(roleId, moduleCode), {
+      actions,
+    }),
+
+  revokeRoleModulePermission: (roleId: number, moduleCode: ModuleCode) =>
+    apiClient.delete<ApiResponse<void>>(API_ENDPOINTS.roles.modulePermission(roleId, moduleCode)),
 };

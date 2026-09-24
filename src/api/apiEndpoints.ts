@@ -25,6 +25,8 @@ export const API_ENDPOINTS = {
   roles: {
     list: '/roles',
     byId: (id: number) => `/roles/${id}`,
+    permissions: (roleId: number) => `/roles/${roleId}/permissions`,
+    modulePermission: (roleId: number, moduleCode: string) => `/roles/${roleId}/permissions/${moduleCode}`,
   },
   permissions: {
     list: '/permissions',

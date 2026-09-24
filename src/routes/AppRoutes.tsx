@@ -1,4 +1,4 @@
-import { createBrowserRouter, Navigate, Outlet } from 'react-router-dom';
+import { createBrowserRouter, Navigate, Outlet, type RouteObject } from 'react-router-dom';
 import { MainLayout } from '@/components/layout/MainLayout';
 import { ForgotPasswordPage } from '@/modules/auth/pages/ForgotPasswordPage';
 import { LoginPage } from '@/modules/auth/pages/LoginPage';
@@ -27,7 +27,13 @@ import { HrPage } from '@/modules/hr/pages/HrPage';
 import { ReportsPage } from '@/modules/reports/pages/ReportsPage';
 import { HelpPage } from '@/modules/dashboard/pages/HelpPage';
 import { ProtectedRoute } from './ProtectedRoute';
+import { RoleGuard } from './RoleGuard';
 import { ROUTE_PATHS } from './routePaths';
+
+/** Routes reachable only with `permission` (ADMIN always passes); others are sent to the dashboard. */
+function guarded(permission: string, ...children: RouteObject[]): RouteObject {
+  return { element: <RoleGuard permission={permission} />, children };
+}
 
 function OnboardingLayoutRoute() {
   return (
@@ -78,19 +84,25 @@ export const appRouter = createBrowserRouter([
         element: <MainLayout />,
         children: [
           { path: ROUTE_PATHS.dashboard, element: <AdminDashboardPage /> },
-          { path: ROUTE_PATHS.sales, element: <SalesPage /> },
-          { path: ROUTE_PATHS.purchase, element: <PurchasePage /> },
-          { path: ROUTE_PATHS.inventory, element: <InventoryPage /> },
-          { path: ROUTE_PATHS.production, element: <ProductionPage /> },
-          { path: ROUTE_PATHS.accounts, element: <AccountsPage /> },
-          { path: ROUTE_PATHS.crm, element: <CrmPage /> },
-          { path: ROUTE_PATHS.hr, element: <HrPage /> },
-          { path: ROUTE_PATHS.reports, element: <ReportsPage /> },
           { path: ROUTE_PATHS.help, element: <HelpPage /> },
-          { path: ROUTE_PATHS.settings.users, element: <UsersPage /> },
-          { path: ROUTE_PATHS.settings.userDetail(':id'), element: <UserDetailPage /> },
-          { path: ROUTE_PATHS.settings.roles, element: <RolesPage /> },
-          { path: ROUTE_PATHS.settings.permissions, element: <PermissionsPage /> },
+          guarded('SALES_VIEW', { path: ROUTE_PATHS.sales, element: <SalesPage /> }),
+          guarded('PURCHASE_VIEW', { path: ROUTE_PATHS.purchase, element: <PurchasePage /> }),
+          guarded('INVENTORY_VIEW', { path: ROUTE_PATHS.inventory, element: <InventoryPage /> }),
+          guarded('PRODUCTION_VIEW', { path: ROUTE_PATHS.production, element: <ProductionPage /> }),
+          guarded('ACCOUNTS_VIEW', { path: ROUTE_PATHS.accounts, element: <AccountsPage /> }),
+          guarded('CRM_VIEW', { path: ROUTE_PATHS.crm, element: <CrmPage /> }),
+          guarded('HR_VIEW', { path: ROUTE_PATHS.hr, element: <HrPage /> }),
+          guarded('REPORTS_VIEW', { path: ROUTE_PATHS.reports, element: <ReportsPage /> }),
+          guarded(
+            'USER_MANAGE',
+            { path: ROUTE_PATHS.settings.users, element: <UsersPage /> },
+            { path: ROUTE_PATHS.settings.userDetail(':id'), element: <UserDetailPage /> },
+          ),
+          guarded(
+            'ROLE_MANAGE',
+            { path: ROUTE_PATHS.settings.roles, element: <RolesPage /> },
+            { path: ROUTE_PATHS.settings.permissions, element: <PermissionsPage /> },
+          ),
         ],
       },
     ],

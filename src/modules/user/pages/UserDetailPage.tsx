@@ -5,6 +5,7 @@ import { ArrowLeftOutlined } from '@ant-design/icons';
 import { Card } from '@/components/common/Card/Card';
 import { PermissionMatrix } from '@/modules/accesscontrol/components/PermissionMatrix';
 import { rbacService } from '@/modules/accesscontrol/services/rbacService';
+import { roleLabel } from '@/modules/accesscontrol/utils/roleLabel';
 import type { ModuleCode, ModulePermission, PermissionAction } from '@/modules/accesscontrol/types/rbac.types';
 import { userService } from '../services/userService';
 import { UserStatusBadge } from '../components/UserStatusBadge';
@@ -105,7 +106,7 @@ export function UserDetailPage() {
         <UserStatusBadge status={user.status} />
       </Head>
       <Meta>
-        {user.email} · Role: {user.roles.join(', ')}
+        {user.email} · Role: {user.roles.map(roleLabel).join(', ')}
       </Meta>
 
       <PanelCard>

@@ -1,3 +1,5 @@
+import { useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import styled from 'styled-components';
 import { CloseOutlined } from '@ant-design/icons';
 import { Card } from '@/components/common/Card/Card';
@@ -8,16 +10,17 @@ const Overlay = styled.div`
   inset: 0;
   background: ${({ theme }) => theme.colors.overlay};
   display: flex;
-  align-items: flex-start;
   justify-content: center;
-  padding: 10vh ${({ theme }) => theme.space[4]} ${({ theme }) => theme.space[6]};
-  z-index: 100;
+  padding: ${({ theme }) => theme.space[5]} ${({ theme }) => theme.space[4]};
+  z-index: 1000;
   overflow-y: auto;
 `;
 
 const Panel = styled(Card)`
   width: 100%;
   max-width: 520px;
+  /* Auto margins centre the dialog on screen, and let a tall one scroll instead of being clipped. */
+  margin: auto 0;
   padding: ${({ theme }) => theme.space[6]};
   box-shadow: ${({ theme }) => theme.shadow.lg};
   border-color: transparent;
@@ -64,9 +67,19 @@ const Footer = styled.div`
 `;
 
 export function Modal({ open, title, onClose, children, footer }: ModalProps) {
+  useEffect(() => {
+    if (!open) return;
+    function onKeyDown(event: KeyboardEvent) {
+      if (event.key === 'Escape') onClose();
+    }
+    window.addEventListener('keydown', onKeyDown);
+    return () => window.removeEventListener('keydown', onKeyDown);
+  }, [open, onClose]);
+
   if (!open) return null;
 
-  return (
+  // Portal to <body> so the backdrop covers the whole app (sidebar included), wherever the modal is used.
+  return createPortal(
     <Overlay onClick={onClose}>
       <Panel onClick={(e) => e.stopPropagation()}>
         <Header>
@@ -78,6 +91,7 @@ export function Modal({ open, title, onClose, children, footer }: ModalProps) {
         {children}
         {footer && <Footer>{footer}</Footer>}
       </Panel>
-    </Overlay>
+    </Overlay>,
+    document.body,
   );
 }
