@@ -1,4 +1,5 @@
 import styled from 'styled-components';
+import { BrandMark } from './BrandMark';
 
 const Wrap = styled.div`
   display: flex;
@@ -7,18 +8,11 @@ const Wrap = styled.div`
   gap: ${({ theme }) => theme.space[2]};
 `;
 
-const Mark = styled.div`
-  width: 34px;
-  height: 34px;
-  border-radius: ${({ theme }) => theme.radius.md};
-  background: linear-gradient(135deg, ${({ theme }) => theme.colors.primary} 0%, ${({ theme }) => theme.palette.cobalt500} 100%);
-  color: #fff;
+const Mark = styled.span`
   display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 18px;
-  font-weight: 700;
   flex-shrink: 0;
+  border-radius: 9px;
+  box-shadow: 0 4px 12px -2px rgba(31, 90, 214, 0.35);
 `;
 
 const Name = styled.span`
@@ -35,7 +29,9 @@ const NameAccent = styled.span`
 export function Logo() {
   return (
     <Wrap>
-      <Mark>+</Mark>
+      <Mark>
+        <BrandMark />
+      </Mark>
       <Name>
         MSME <NameAccent>ERP</NameAccent>
       </Name>
