@@ -2,6 +2,7 @@ import { useState, type FormEvent } from 'react';
 import { useNavigate } from 'react-router-dom';
 import styled from 'styled-components';
 import { isAxiosError } from 'axios';
+import { MailOutlined } from '@ant-design/icons';
 import { Button } from '@/components/common/Button/Button';
 import { Input } from '@/components/common/Input/Input';
 import { ROUTE_PATHS } from '@/routes/routePaths';
@@ -89,7 +90,7 @@ export function RegisterCompanyPage() {
           type="email"
           label="Administrator email"
           placeholder="admin@acmetraders.in"
-          prefixIcon="✉"
+          prefixIcon={<MailOutlined />}
           value={adminEmail}
           onChange={(e) => setAdminEmail(e.target.value)}
           required

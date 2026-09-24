@@ -11,6 +11,7 @@ export interface UserSummary {
   phoneNumber: string | null;
   status: UserStatus;
   roles: string[];
+  roleIds: number[];
   createdAt: string;
 }
 
@@ -28,7 +29,6 @@ export interface InviteUserRequest {
   email: string;
   firstName: string;
   lastName: string;
-  roleIds: number[];
 }
 
 export interface UpdateUserRequest {

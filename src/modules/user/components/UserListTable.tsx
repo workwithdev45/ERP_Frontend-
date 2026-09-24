@@ -1,97 +1,154 @@
 import styled from 'styled-components';
-import { Link } from 'react-router-dom';
-import { Button } from '@/components/common/Button/Button';
+import { MoreOutlined } from '@ant-design/icons';
 import { UserStatusBadge } from './UserStatusBadge';
 import type { UserSummary } from '../types/user.types';
 
-const Table = styled.table`
+const TableWrap = styled.div`
+  overflow-x: auto;
+`;
+
+const StyledTable = styled.table`
   width: 100%;
   border-collapse: collapse;
-  font-size: 14px;
 `;
 
 const Th = styled.th`
   text-align: left;
-  padding: ${({ theme }) => theme.space[3]} ${({ theme }) => theme.space[3]};
-  border-bottom: 1px solid ${({ theme }) => theme.colors.border};
-  color: ${({ theme }) => theme.colors.textSecondary};
+  padding: ${({ theme }) => theme.space[3]} ${({ theme }) => theme.space[4]};
   font-size: 12px;
-  text-transform: uppercase;
+  font-weight: 600;
   letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: ${({ theme }) => theme.colors.textMuted};
+  border-bottom: 1px solid ${({ theme }) => theme.colors.border};
 `;
 
 const Td = styled.td`
-  padding: ${({ theme }) => theme.space[3]};
+  padding: ${({ theme }) => theme.space[4]};
+  font-size: 14px;
+  color: ${({ theme }) => theme.colors.text};
   border-bottom: 1px solid ${({ theme }) => theme.colors.border};
-  vertical-align: middle;
+  white-space: nowrap;
 `;
 
-const NameLink = styled(Link)`
+const NameCell = styled.div`
+  display: flex;
+  align-items: center;
+  gap: ${({ theme }) => theme.space[3]};
+`;
+
+const Avatar = styled.div`
+  width: 36px;
+  height: 36px;
+  flex-shrink: 0;
+  border-radius: 50%;
+  background: ${({ theme }) => theme.colors.primaryLight};
+  color: ${({ theme }) => theme.colors.primary};
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  font-size: 14px;
+`;
+
+const NameText = styled.div`
   font-weight: 600;
   color: ${({ theme }) => theme.colors.navy};
-  text-decoration: none;
+`;
+
+const RolesText = styled.div`
+  font-size: 12px;
+  color: ${({ theme }) => theme.colors.textMuted};
+`;
+
+const EmptyState = styled.div`
+  padding: ${({ theme }) => theme.space[8]};
+  text-align: center;
+  color: ${({ theme }) => theme.colors.textMuted};
+  font-size: 14px;
+`;
+
+const MenuCell = styled.td`
+  padding: ${({ theme }) => theme.space[4]};
+  border-bottom: 1px solid ${({ theme }) => theme.colors.border};
+  text-align: right;
+  position: relative;
+  white-space: nowrap;
+`;
+
+const MenuButton = styled.button`
+  width: 32px;
+  height: 32px;
+  border-radius: ${({ theme }) => theme.radius.sm};
+  border: 1px solid ${({ theme }) => theme.colors.border};
+  background: ${({ theme }) => theme.colors.bg};
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
 
   &:hover {
-    text-decoration: underline;
+    background: ${({ theme }) => theme.colors.bgSubtle};
   }
 `;
 
-const Muted = styled.div`
-  color: ${({ theme }) => theme.colors.textMuted};
-  font-size: 12px;
-`;
-
-const Actions = styled.div`
-  display: flex;
-  gap: ${({ theme }) => theme.space[2]};
-`;
+function formatDate(iso: string): string {
+  return new Date(iso).toLocaleDateString('en-US', { day: '2-digit', month: 'short', year: 'numeric' });
+}
 
 interface UserListTableProps {
   users: UserSummary[];
-  onDeactivate: (user: UserSummary) => void;
-  onReactivate: (user: UserSummary) => void;
+  onViewUser: (user: UserSummary) => void;
 }
 
-export function UserListTable({ users, onDeactivate, onReactivate }: UserListTableProps) {
+export function UserListTable({ users, onViewUser }: UserListTableProps) {
+  if (users.length === 0) {
+    return <EmptyState>No members yet. Add one to get started.</EmptyState>;
+  }
+
   return (
-    <Table>
-      <thead>
-        <tr>
-          <Th>Name</Th>
-          <Th>Role</Th>
-          <Th>Status</Th>
-          <Th>Actions</Th>
-        </tr>
-      </thead>
-      <tbody>
-        {users.map((user) => (
-          <tr key={user.id}>
-            <Td>
-              <NameLink to={`/settings/users/${user.id}`}>
-                {user.firstName} {user.lastName}
-              </NameLink>
-              <Muted>{user.email}</Muted>
-            </Td>
-            <Td>{user.roles.join(', ')}</Td>
-            <Td>
-              <UserStatusBadge status={user.status} />
-            </Td>
-            <Td>
-              <Actions>
-                {user.status === 'ACTIVE' || user.status === 'PENDING_VERIFICATION' ? (
-                  <Button variant="ghost" onClick={() => onDeactivate(user)}>
-                    Deactivate
-                  </Button>
-                ) : (
-                  <Button variant="ghost" onClick={() => onReactivate(user)}>
-                    Reactivate
-                  </Button>
-                )}
-              </Actions>
-            </Td>
+    <TableWrap>
+      <StyledTable>
+        <thead>
+          <tr>
+            <Th>Member</Th>
+            <Th>Email</Th>
+            <Th>Phone</Th>
+            <Th>Status</Th>
+            <Th>Active Since</Th>
+            <Th />
           </tr>
-        ))}
-      </tbody>
-    </Table>
+        </thead>
+        <tbody>
+          {users.map((user) => {
+            const fullName = `${user.firstName} ${user.lastName}`.trim();
+            return (
+              <tr key={user.id}>
+                <Td>
+                  <NameCell>
+                    <Avatar>{fullName.charAt(0).toUpperCase() || user.username.charAt(0).toUpperCase()}</Avatar>
+                    <div>
+                      <NameText>{fullName || user.username}</NameText>
+                      <RolesText>{user.roles.join(', ')}</RolesText>
+                    </div>
+                  </NameCell>
+                </Td>
+                <Td>{user.email}</Td>
+                <Td>{user.phoneNumber ?? '—'}</Td>
+                <Td>
+                  <UserStatusBadge status={user.status} />
+                </Td>
+                <Td>{formatDate(user.createdAt)}</Td>
+                <MenuCell>
+                  <MenuButton type="button" onClick={() => onViewUser(user)} aria-label={`Actions for ${fullName || user.username}`}>
+                    <MoreOutlined />
+                  </MenuButton>
+                </MenuCell>
+              </tr>
+            );
+          })}
+        </tbody>
+      </StyledTable>
+    </TableWrap>
   );
 }

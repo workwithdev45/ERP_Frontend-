@@ -1,7 +1,7 @@
 import styled from 'styled-components';
 import { MoreOutlined } from '@ant-design/icons';
 import { BadgeText } from '@/components/common/Badge/Badge';
-import type { RoleDto } from '../types/rbac.types';
+import type { StockItemDto } from '../types/inventory.types';
 
 const TableWrap = styled.div`
   overflow-x: auto;
@@ -31,20 +31,21 @@ const Td = styled.td`
   vertical-align: top;
 `;
 
-const RoleName = styled.div`
+const ItemName = styled.div`
   font-weight: 600;
   color: ${({ theme }) => theme.colors.navy};
 `;
 
-const RoleDescription = styled.div`
+const ItemMeta = styled.div`
   font-size: 12px;
   color: ${({ theme }) => theme.colors.textMuted};
   margin-top: 2px;
 `;
 
-const PermissionCount = styled.span`
-  font-size: 13px;
-  color: ${({ theme }) => theme.colors.textSecondary};
+const StockCell = styled.div`
+  display: flex;
+  align-items: center;
+  gap: ${({ theme }) => theme.space[2]};
 `;
 
 const MenuCell = styled.td`
@@ -77,14 +78,14 @@ const EmptyState = styled.div`
   font-size: 14px;
 `;
 
-interface RoleListTableProps {
-  roles: RoleDto[];
-  onViewRole: (role: RoleDto) => void;
+interface StockItemListTableProps {
+  items: StockItemDto[];
+  onViewItem: (item: StockItemDto) => void;
 }
 
-export function RoleListTable({ roles, onViewRole }: RoleListTableProps) {
-  if (roles.length === 0) {
-    return <EmptyState>No roles yet. Create one to get started.</EmptyState>;
+export function StockItemListTable({ items, onViewItem }: StockItemListTableProps) {
+  if (items.length === 0) {
+    return <EmptyState>No stock items yet. Add one to get started.</EmptyState>;
   }
 
   return (
@@ -92,31 +93,38 @@ export function RoleListTable({ roles, onViewRole }: RoleListTableProps) {
       <StyledTable>
         <thead>
           <tr>
-            <Th>Role ID</Th>
-            <Th>Role</Th>
-            <Th>Permissions</Th>
-            <Th>Type</Th>
+            <Th>SKU</Th>
+            <Th>Item</Th>
+            <Th>Current Stock</Th>
+            <Th>Reorder At</Th>
+            <Th>Status</Th>
             <Th />
           </tr>
         </thead>
         <tbody>
-          {roles.map((role) => (
-            <tr key={role.id}>
-              <Td>{role.id}</Td>
+          {items.map((item) => (
+            <tr key={item.id}>
+              <Td>{item.sku}</Td>
               <Td>
-                <RoleName>{role.name}</RoleName>
-                {role.description && <RoleDescription>{role.description}</RoleDescription>}
+                <ItemName>{item.name}</ItemName>
+                {item.category && <ItemMeta>{item.category}</ItemMeta>}
               </Td>
               <Td>
-                <PermissionCount>{role.permissionNames.length} granted</PermissionCount>
+                <StockCell>
+                  {item.currentStock} {item.uom}
+                  {item.lowStock && <BadgeText tone="danger">Low stock</BadgeText>}
+                </StockCell>
               </Td>
               <Td>
-                <BadgeText tone={role.systemRole ? 'neutral' : 'success'}>
-                  {role.systemRole ? 'System' : 'Custom'}
+                {item.reorderThreshold} {item.uom}
+              </Td>
+              <Td>
+                <BadgeText tone={item.active ? 'success' : 'neutral'}>
+                  {item.active ? 'Active' : 'Inactive'}
                 </BadgeText>
               </Td>
               <MenuCell>
-                <MenuButton type="button" onClick={() => onViewRole(role)} aria-label={`Actions for ${role.name}`}>
+                <MenuButton type="button" onClick={() => onViewItem(item)} aria-label={`Actions for ${item.name}`}>
                   <MoreOutlined />
                 </MenuButton>
               </MenuCell>

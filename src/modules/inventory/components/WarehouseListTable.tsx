@@ -1,7 +1,7 @@
 import styled from 'styled-components';
 import { MoreOutlined } from '@ant-design/icons';
 import { BadgeText } from '@/components/common/Badge/Badge';
-import type { RoleDto } from '../types/rbac.types';
+import type { WarehouseDto } from '../types/inventory.types';
 
 const TableWrap = styled.div`
   overflow-x: auto;
@@ -31,20 +31,15 @@ const Td = styled.td`
   vertical-align: top;
 `;
 
-const RoleName = styled.div`
+const WarehouseName = styled.div`
   font-weight: 600;
   color: ${({ theme }) => theme.colors.navy};
 `;
 
-const RoleDescription = styled.div`
+const WarehouseLocation = styled.div`
   font-size: 12px;
   color: ${({ theme }) => theme.colors.textMuted};
   margin-top: 2px;
-`;
-
-const PermissionCount = styled.span`
-  font-size: 13px;
-  color: ${({ theme }) => theme.colors.textSecondary};
 `;
 
 const MenuCell = styled.td`
@@ -77,14 +72,14 @@ const EmptyState = styled.div`
   font-size: 14px;
 `;
 
-interface RoleListTableProps {
-  roles: RoleDto[];
-  onViewRole: (role: RoleDto) => void;
+interface WarehouseListTableProps {
+  warehouses: WarehouseDto[];
+  onViewWarehouse: (warehouse: WarehouseDto) => void;
 }
 
-export function RoleListTable({ roles, onViewRole }: RoleListTableProps) {
-  if (roles.length === 0) {
-    return <EmptyState>No roles yet. Create one to get started.</EmptyState>;
+export function WarehouseListTable({ warehouses, onViewWarehouse }: WarehouseListTableProps) {
+  if (warehouses.length === 0) {
+    return <EmptyState>No warehouses yet. Add one to get started.</EmptyState>;
   }
 
   return (
@@ -92,31 +87,31 @@ export function RoleListTable({ roles, onViewRole }: RoleListTableProps) {
       <StyledTable>
         <thead>
           <tr>
-            <Th>Role ID</Th>
-            <Th>Role</Th>
-            <Th>Permissions</Th>
-            <Th>Type</Th>
+            <Th>Code</Th>
+            <Th>Warehouse</Th>
+            <Th>Status</Th>
             <Th />
           </tr>
         </thead>
         <tbody>
-          {roles.map((role) => (
-            <tr key={role.id}>
-              <Td>{role.id}</Td>
+          {warehouses.map((warehouse) => (
+            <tr key={warehouse.id}>
+              <Td>{warehouse.code}</Td>
               <Td>
-                <RoleName>{role.name}</RoleName>
-                {role.description && <RoleDescription>{role.description}</RoleDescription>}
+                <WarehouseName>{warehouse.name}</WarehouseName>
+                {warehouse.location && <WarehouseLocation>{warehouse.location}</WarehouseLocation>}
               </Td>
               <Td>
-                <PermissionCount>{role.permissionNames.length} granted</PermissionCount>
-              </Td>
-              <Td>
-                <BadgeText tone={role.systemRole ? 'neutral' : 'success'}>
-                  {role.systemRole ? 'System' : 'Custom'}
+                <BadgeText tone={warehouse.active ? 'success' : 'neutral'}>
+                  {warehouse.active ? 'Active' : 'Inactive'}
                 </BadgeText>
               </Td>
               <MenuCell>
-                <MenuButton type="button" onClick={() => onViewRole(role)} aria-label={`Actions for ${role.name}`}>
+                <MenuButton
+                  type="button"
+                  onClick={() => onViewWarehouse(warehouse)}
+                  aria-label={`Actions for ${warehouse.name}`}
+                >
                   <MoreOutlined />
                 </MenuButton>
               </MenuCell>

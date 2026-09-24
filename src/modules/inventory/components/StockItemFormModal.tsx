@@ -3,7 +3,7 @@ import styled from 'styled-components';
 import { CloseOutlined } from '@ant-design/icons';
 import { Button } from '@/components/common/Button/Button';
 import { Input } from '@/components/common/Input/Input';
-import type { InviteUserRequest } from '../types/user.types';
+import type { StockItemUpsertRequest } from '../types/inventory.types';
 
 const Overlay = styled.div`
   position: fixed;
@@ -18,7 +18,7 @@ const Overlay = styled.div`
 
 const Panel = styled.div`
   width: 100%;
-  max-width: 620px;
+  max-width: 520px;
   max-height: 90vh;
   overflow-y: auto;
   background: ${({ theme }) => theme.colors.bg};
@@ -47,17 +47,11 @@ const CloseButton = styled.button`
 `;
 
 const Title = styled.h2`
-  font-size: 18px;
+  font-size: 20px;
   font-weight: 700;
   color: ${({ theme }) => theme.colors.navy};
-  margin-bottom: 4px;
-  padding-right: ${({ theme }) => theme.space[8]};
-`;
-
-const Subtitle = styled.p`
-  font-size: 13px;
-  color: ${({ theme }) => theme.colors.textSecondary};
   margin-bottom: ${({ theme }) => theme.space[5]};
+  padding-right: ${({ theme }) => theme.space[8]};
 `;
 
 const Form = styled.form`
@@ -82,29 +76,39 @@ const Actions = styled.div`
   justify-content: flex-end;
   gap: ${({ theme }) => theme.space[3]};
   margin-top: ${({ theme }) => theme.space[2]};
+  padding-top: ${({ theme }) => theme.space[4]};
+  border-top: 1px solid ${({ theme }) => theme.colors.border};
 `;
 
-interface UserFormModalProps {
+interface StockItemFormModalProps {
   open: boolean;
   submitting: boolean;
   error?: string;
   onClose: () => void;
-  onSubmit: (payload: InviteUserRequest) => void;
+  onSubmit: (payload: StockItemUpsertRequest) => void;
 }
 
-export function UserFormModal({ open, submitting, error, onClose, onSubmit }: UserFormModalProps) {
-  const [firstName, setFirstName] = useState('');
-  const [lastName, setLastName] = useState('');
-  const [email, setEmail] = useState('');
+export function StockItemFormModal({ open, submitting, error, onClose, onSubmit }: StockItemFormModalProps) {
+  const [sku, setSku] = useState('');
+  const [name, setName] = useState('');
+  const [category, setCategory] = useState('');
+  const [uom, setUom] = useState('');
+  const [reorderThreshold, setReorderThreshold] = useState('');
 
   if (!open) return null;
 
-  const isValid = !!firstName.trim() && !!lastName.trim() && !!email.trim();
+  const isValid = !!sku.trim() && !!name.trim() && !!uom.trim() && reorderThreshold.trim() !== '';
 
   function handleSubmit(e: FormEvent) {
     e.preventDefault();
     if (!isValid) return;
-    onSubmit({ firstName, lastName, email });
+    onSubmit({
+      sku: sku.trim().toUpperCase(),
+      name: name.trim(),
+      category: category.trim() || undefined,
+      uom: uom.trim().toUpperCase(),
+      reorderThreshold: Number(reorderThreshold),
+    });
   }
 
   return (
@@ -113,46 +117,40 @@ export function UserFormModal({ open, submitting, error, onClose, onSubmit }: Us
         <CloseButton type="button" onClick={onClose} aria-label="Close">
           <CloseOutlined />
         </CloseButton>
-        <Title>Add Member</Title>
-        <Subtitle>They&apos;ll receive an email with a link to set their own password and sign in.</Subtitle>
+        <Title>Add Stock Item</Title>
         <Form onSubmit={handleSubmit}>
           <Row>
-            <Input
-              id="firstName"
-              label="First name"
-              placeholder="Sunita"
-              value={firstName}
-              onChange={(e) => setFirstName(e.target.value)}
-              required
-            />
-            <Input
-              id="lastName"
-              label="Last name"
-              placeholder="Sharma"
-              value={lastName}
-              onChange={(e) => setLastName(e.target.value)}
-              required
-            />
+            <Input id="itemSku" label="SKU" placeholder="SKU-001" value={sku} onChange={(e) => setSku(e.target.value)} required />
+            <Input id="itemName" label="Name" placeholder="Item name" value={name} onChange={(e) => setName(e.target.value)} required />
           </Row>
-
+          <Row>
+            <Input
+              id="itemCategory"
+              label="Category (Optional)"
+              placeholder="Raw Material"
+              value={category}
+              onChange={(e) => setCategory(e.target.value)}
+            />
+            <Input id="itemUom" label="Unit of Measure" placeholder="PCS" value={uom} onChange={(e) => setUom(e.target.value)} required />
+          </Row>
           <Input
-            id="email"
-            type="email"
-            label="Email"
-            placeholder="teammate@company.in"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
+            id="itemReorderThreshold"
+            label="Reorder Threshold"
+            type="number"
+            placeholder="10"
+            value={reorderThreshold}
+            onChange={(e) => setReorderThreshold(e.target.value)}
             required
           />
 
           {error && <ErrorText>{error}</ErrorText>}
 
           <Actions>
+            <Button type="submit" disabled={!isValid} loading={submitting}>
+              Create Item
+            </Button>
             <Button type="button" variant="secondary" onClick={onClose}>
               Cancel
-            </Button>
-            <Button type="submit" disabled={!isValid} loading={submitting}>
-              Send Invite
             </Button>
           </Actions>
         </Form>

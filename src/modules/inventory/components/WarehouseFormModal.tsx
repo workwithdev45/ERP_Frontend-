@@ -3,7 +3,7 @@ import styled from 'styled-components';
 import { CloseOutlined } from '@ant-design/icons';
 import { Button } from '@/components/common/Button/Button';
 import { Input } from '@/components/common/Input/Input';
-import type { InviteUserRequest } from '../types/user.types';
+import type { WarehouseUpsertRequest } from '../types/inventory.types';
 
 const Overlay = styled.div`
   position: fixed;
@@ -18,7 +18,7 @@ const Overlay = styled.div`
 
 const Panel = styled.div`
   width: 100%;
-  max-width: 620px;
+  max-width: 480px;
   max-height: 90vh;
   overflow-y: auto;
   background: ${({ theme }) => theme.colors.bg};
@@ -47,17 +47,11 @@ const CloseButton = styled.button`
 `;
 
 const Title = styled.h2`
-  font-size: 18px;
+  font-size: 20px;
   font-weight: 700;
   color: ${({ theme }) => theme.colors.navy};
-  margin-bottom: 4px;
-  padding-right: ${({ theme }) => theme.space[8]};
-`;
-
-const Subtitle = styled.p`
-  font-size: 13px;
-  color: ${({ theme }) => theme.colors.textSecondary};
   margin-bottom: ${({ theme }) => theme.space[5]};
+  padding-right: ${({ theme }) => theme.space[8]};
 `;
 
 const Form = styled.form`
@@ -82,29 +76,31 @@ const Actions = styled.div`
   justify-content: flex-end;
   gap: ${({ theme }) => theme.space[3]};
   margin-top: ${({ theme }) => theme.space[2]};
+  padding-top: ${({ theme }) => theme.space[4]};
+  border-top: 1px solid ${({ theme }) => theme.colors.border};
 `;
 
-interface UserFormModalProps {
+interface WarehouseFormModalProps {
   open: boolean;
   submitting: boolean;
   error?: string;
   onClose: () => void;
-  onSubmit: (payload: InviteUserRequest) => void;
+  onSubmit: (payload: WarehouseUpsertRequest) => void;
 }
 
-export function UserFormModal({ open, submitting, error, onClose, onSubmit }: UserFormModalProps) {
-  const [firstName, setFirstName] = useState('');
-  const [lastName, setLastName] = useState('');
-  const [email, setEmail] = useState('');
+export function WarehouseFormModal({ open, submitting, error, onClose, onSubmit }: WarehouseFormModalProps) {
+  const [name, setName] = useState('');
+  const [code, setCode] = useState('');
+  const [location, setLocation] = useState('');
 
   if (!open) return null;
 
-  const isValid = !!firstName.trim() && !!lastName.trim() && !!email.trim();
+  const isValid = !!name.trim() && !!code.trim();
 
   function handleSubmit(e: FormEvent) {
     e.preventDefault();
     if (!isValid) return;
-    onSubmit({ firstName, lastName, email });
+    onSubmit({ name: name.trim(), code: code.trim().toUpperCase(), location: location.trim() || undefined });
   }
 
   return (
@@ -113,46 +109,42 @@ export function UserFormModal({ open, submitting, error, onClose, onSubmit }: Us
         <CloseButton type="button" onClick={onClose} aria-label="Close">
           <CloseOutlined />
         </CloseButton>
-        <Title>Add Member</Title>
-        <Subtitle>They&apos;ll receive an email with a link to set their own password and sign in.</Subtitle>
+        <Title>Add Warehouse</Title>
         <Form onSubmit={handleSubmit}>
           <Row>
             <Input
-              id="firstName"
-              label="First name"
-              placeholder="Sunita"
-              value={firstName}
-              onChange={(e) => setFirstName(e.target.value)}
+              id="warehouseName"
+              label="Name"
+              placeholder="Main Warehouse"
+              value={name}
+              onChange={(e) => setName(e.target.value)}
               required
             />
             <Input
-              id="lastName"
-              label="Last name"
-              placeholder="Sharma"
-              value={lastName}
-              onChange={(e) => setLastName(e.target.value)}
+              id="warehouseCode"
+              label="Code"
+              placeholder="WH-01"
+              value={code}
+              onChange={(e) => setCode(e.target.value)}
               required
             />
           </Row>
-
           <Input
-            id="email"
-            type="email"
-            label="Email"
-            placeholder="teammate@company.in"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            required
+            id="warehouseLocation"
+            label="Location (Optional)"
+            placeholder="City, address"
+            value={location}
+            onChange={(e) => setLocation(e.target.value)}
           />
 
           {error && <ErrorText>{error}</ErrorText>}
 
           <Actions>
+            <Button type="submit" disabled={!isValid} loading={submitting}>
+              Create Warehouse
+            </Button>
             <Button type="button" variant="secondary" onClick={onClose}>
               Cancel
-            </Button>
-            <Button type="submit" disabled={!isValid} loading={submitting}>
-              Send Invite
             </Button>
           </Actions>
         </Form>

@@ -2,6 +2,7 @@ import { useState, type FormEvent } from 'react';
 import { useNavigate } from 'react-router-dom';
 import styled from 'styled-components';
 import { isAxiosError } from 'axios';
+import { BankOutlined, MailOutlined, LockOutlined, EyeOutlined, EyeInvisibleOutlined } from '@ant-design/icons';
 import { Button } from '@/components/common/Button/Button';
 import { Card } from '@/components/common/Card/Card';
 import { Input } from '@/components/common/Input/Input';
@@ -115,7 +116,7 @@ export function LoginPage() {
             type="text"
             label="Company Portal ID"
             placeholder="e.g. acme-traders"
-            prefixIcon="🏢"
+            prefixIcon={<BankOutlined />}
             value={portalId}
             onChange={(e) => setPortalId(e.target.value)}
             required
@@ -125,7 +126,7 @@ export function LoginPage() {
             type="text"
             label="Username or Email"
             placeholder="Enter username or email"
-            prefixIcon="✉"
+            prefixIcon={<MailOutlined />}
             value={usernameOrEmail}
             onChange={(e) => setUsernameOrEmail(e.target.value)}
             required
@@ -135,8 +136,8 @@ export function LoginPage() {
             type={showPassword ? 'text' : 'password'}
             label="Password"
             placeholder="Password"
-            prefixIcon="🔒"
-            suffixIcon={showPassword ? '🙈' : '👁'}
+            prefixIcon={<LockOutlined />}
+            suffixIcon={showPassword ? <EyeInvisibleOutlined /> : <EyeOutlined />}
             onSuffixIconClick={() => setShowPassword((prev) => !prev)}
             value={password}
             onChange={(e) => setPassword(e.target.value)}

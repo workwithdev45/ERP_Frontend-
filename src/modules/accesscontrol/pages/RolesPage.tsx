@@ -3,10 +3,11 @@ import { isAxiosError } from 'axios';
 import styled from 'styled-components';
 import { Button } from '@/components/common/Button/Button';
 import { Card } from '@/components/common/Card/Card';
+import { RoleDetailModal } from '../components/RoleDetailModal';
 import { RoleFormModal } from '../components/RoleFormModal';
 import { RoleListTable } from '../components/RoleListTable';
 import { rbacService } from '../services/rbacService';
-import type { PermissionDto, RoleDto, RoleUpsertRequest } from '../types/rbac.types';
+import type { RoleDto, RoleUpsertRequest } from '../types/rbac.types';
 
 const Head = styled.div`
   display: flex;
@@ -32,10 +33,10 @@ const TableCard = styled(Card)`
 
 export function RolesPage() {
   const [roles, setRoles] = useState<RoleDto[]>([]);
-  const [permissions, setPermissions] = useState<PermissionDto[]>([]);
   const [modalOpen, setModalOpen] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState('');
+  const [selectedRole, setSelectedRole] = useState<RoleDto | null>(null);
 
   async function loadRoles() {
     const { data } = await rbacService.listRoles();
@@ -44,7 +45,6 @@ export function RolesPage() {
 
   useEffect(() => {
     loadRoles();
-    rbacService.listPermissions().then(({ data }) => setPermissions(data.data));
   }, []);
 
   async function handleCreate(payload: RoleUpsertRequest) {
@@ -65,9 +65,14 @@ export function RolesPage() {
     }
   }
 
-  async function handleDelete(role: RoleDto) {
-    await rbacService.deleteRole(role.id);
-    await loadRoles();
+  function handleRoleUpdated(updated: RoleDto) {
+    setRoles((prev) => prev.map((r) => (r.id === updated.id ? updated : r)));
+    setSelectedRole(null);
+  }
+
+  function handleRoleDeleted(deleted: RoleDto) {
+    setRoles((prev) => prev.filter((r) => r.id !== deleted.id));
+    setSelectedRole(null);
   }
 
   return (
@@ -81,17 +86,25 @@ export function RolesPage() {
       </Head>
 
       <TableCard>
-        <RoleListTable roles={roles} onDelete={handleDelete} />
+        <RoleListTable roles={roles} onViewRole={setSelectedRole} />
       </TableCard>
 
       <RoleFormModal
         open={modalOpen}
-        permissions={permissions}
         submitting={submitting}
         error={error}
         onClose={() => setModalOpen(false)}
         onSubmit={handleCreate}
       />
+
+      {selectedRole && (
+        <RoleDetailModal
+          role={selectedRole}
+          onClose={() => setSelectedRole(null)}
+          onUpdated={handleRoleUpdated}
+          onDeleted={handleRoleDeleted}
+        />
+      )}
     </div>
   );
 }

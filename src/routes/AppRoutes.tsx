@@ -25,6 +25,7 @@ import { HrPage } from '@/modules/hr/pages/HrPage';
 import { ReportsPage } from '@/modules/reports/pages/ReportsPage';
 import { HelpPage } from '@/modules/dashboard/pages/HelpPage';
 import { ProtectedRoute } from './ProtectedRoute';
+import { RoleGuard } from './RoleGuard';
 import { ROUTE_PATHS } from './routePaths';
 
 function OnboardingLayoutRoute() {
@@ -68,19 +69,53 @@ export const appRouter = createBrowserRouter([
         element: <MainLayout />,
         children: [
           { path: ROUTE_PATHS.dashboard, element: <AdminDashboardPage /> },
-          { path: ROUTE_PATHS.sales, element: <SalesPage /> },
-          { path: ROUTE_PATHS.purchase, element: <PurchasePage /> },
-          { path: ROUTE_PATHS.inventory, element: <InventoryPage /> },
-          { path: ROUTE_PATHS.production, element: <ProductionPage /> },
-          { path: ROUTE_PATHS.accounts, element: <AccountsPage /> },
-          { path: ROUTE_PATHS.crm, element: <CrmPage /> },
-          { path: ROUTE_PATHS.hr, element: <HrPage /> },
-          { path: ROUTE_PATHS.reports, element: <ReportsPage /> },
           { path: ROUTE_PATHS.help, element: <HelpPage /> },
-          { path: ROUTE_PATHS.settings.users, element: <UsersPage /> },
-          { path: ROUTE_PATHS.settings.userDetail(':id'), element: <UserDetailPage /> },
-          { path: ROUTE_PATHS.settings.roles, element: <RolesPage /> },
-          { path: ROUTE_PATHS.settings.permissions, element: <PermissionsPage /> },
+          {
+            element: <RoleGuard permission="SALES_VIEW" />,
+            children: [{ path: ROUTE_PATHS.sales, element: <SalesPage /> }],
+          },
+          {
+            element: <RoleGuard permission="PURCHASE_VIEW" />,
+            children: [{ path: ROUTE_PATHS.purchase, element: <PurchasePage /> }],
+          },
+          {
+            element: <RoleGuard permission="INVENTORY_VIEW" />,
+            children: [{ path: ROUTE_PATHS.inventory, element: <InventoryPage /> }],
+          },
+          {
+            element: <RoleGuard permission="PRODUCTION_VIEW" />,
+            children: [{ path: ROUTE_PATHS.production, element: <ProductionPage /> }],
+          },
+          {
+            element: <RoleGuard permission="ACCOUNTS_VIEW" />,
+            children: [{ path: ROUTE_PATHS.accounts, element: <AccountsPage /> }],
+          },
+          {
+            element: <RoleGuard permission="CRM_VIEW" />,
+            children: [{ path: ROUTE_PATHS.crm, element: <CrmPage /> }],
+          },
+          {
+            element: <RoleGuard permission="HR_VIEW" />,
+            children: [{ path: ROUTE_PATHS.hr, element: <HrPage /> }],
+          },
+          {
+            element: <RoleGuard permission="REPORTS_VIEW" />,
+            children: [{ path: ROUTE_PATHS.reports, element: <ReportsPage /> }],
+          },
+          {
+            element: <RoleGuard permission="USER_MANAGE" />,
+            children: [
+              { path: ROUTE_PATHS.settings.users, element: <UsersPage /> },
+              { path: ROUTE_PATHS.settings.userDetail(':id'), element: <UserDetailPage /> },
+            ],
+          },
+          {
+            element: <RoleGuard permission="ROLE_MANAGE" />,
+            children: [
+              { path: ROUTE_PATHS.settings.roles, element: <RolesPage /> },
+              { path: ROUTE_PATHS.settings.permissions, element: <PermissionsPage /> },
+            ],
+          },
         ],
       },
     ],

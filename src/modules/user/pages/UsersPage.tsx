@@ -3,8 +3,7 @@ import { isAxiosError } from 'axios';
 import styled from 'styled-components';
 import { Button } from '@/components/common/Button/Button';
 import { Card } from '@/components/common/Card/Card';
-import { rbacService } from '@/modules/accesscontrol/services/rbacService';
-import type { RoleDto } from '@/modules/accesscontrol/types/rbac.types';
+import { UserDetailModal } from '../components/UserDetailModal';
 import { UserFormModal } from '../components/UserFormModal';
 import { UserListTable } from '../components/UserListTable';
 import { userService } from '../services/userService';
@@ -40,11 +39,11 @@ const EmptyState = styled.p`
 
 export function UsersPage() {
   const [users, setUsers] = useState<UserSummary[]>([]);
-  const [roles, setRoles] = useState<RoleDto[]>([]);
   const [loading, setLoading] = useState(true);
   const [modalOpen, setModalOpen] = useState(false);
   const [inviteError, setInviteError] = useState('');
   const [submitting, setSubmitting] = useState(false);
+  const [selectedUser, setSelectedUser] = useState<UserSummary | null>(null);
 
   async function loadUsers() {
     setLoading(true);
@@ -58,7 +57,6 @@ export function UsersPage() {
 
   useEffect(() => {
     loadUsers();
-    rbacService.listRoles().then(({ data }) => setRoles(data.data));
   }, []);
 
   async function handleInvite(payload: InviteUserRequest) {
@@ -79,44 +77,42 @@ export function UsersPage() {
     }
   }
 
-  async function handleDeactivate(user: UserSummary) {
-    await userService.deactivate(user.id);
-    await loadUsers();
-  }
-
-  async function handleReactivate(user: UserSummary) {
-    await userService.reactivate(user.id);
-    await loadUsers();
+  function handleUserUpdated(updated: UserSummary) {
+    setUsers((prev) => prev.map((u) => (u.id === updated.id ? updated : u)));
+    setSelectedUser(null);
   }
 
   return (
     <div>
       <Head>
         <div>
-          <PageTitle>Users</PageTitle>
+          <PageTitle>Members</PageTitle>
           <PageSubtitle>Invite teammates and manage their access.</PageSubtitle>
         </div>
-        <Button onClick={() => setModalOpen(true)}>+ Invite user</Button>
+        <Button onClick={() => setModalOpen(true)}>+ Invite member</Button>
       </Head>
 
       <TableCard>
         {loading ? (
           <EmptyState>Loading…</EmptyState>
         ) : users.length === 0 ? (
-          <EmptyState>No users yet. Invite your first teammate.</EmptyState>
+          <EmptyState>No members yet. Invite your first teammate.</EmptyState>
         ) : (
-          <UserListTable users={users} onDeactivate={handleDeactivate} onReactivate={handleReactivate} />
+          <UserListTable users={users} onViewUser={setSelectedUser} />
         )}
       </TableCard>
 
       <UserFormModal
         open={modalOpen}
-        roles={roles}
         submitting={submitting}
         error={inviteError}
         onClose={() => setModalOpen(false)}
         onSubmit={handleInvite}
       />
+
+      {selectedUser && (
+        <UserDetailModal user={selectedUser} onClose={() => setSelectedUser(null)} onUpdated={handleUserUpdated} />
+      )}
     </div>
   );
 }

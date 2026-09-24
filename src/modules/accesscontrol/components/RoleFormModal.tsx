@@ -1,9 +1,58 @@
-import { useMemo, useState, type FormEvent } from 'react';
+import { useState, type FormEvent } from 'react';
 import styled from 'styled-components';
+import { CloseOutlined } from '@ant-design/icons';
 import { Button } from '@/components/common/Button/Button';
 import { Input } from '@/components/common/Input/Input';
-import { Modal } from '@/components/common/Modal/Modal';
-import type { PermissionDto, RoleUpsertRequest } from '../types/rbac.types';
+import type { RoleUpsertRequest } from '../types/rbac.types';
+
+const Overlay = styled.div`
+  position: fixed;
+  inset: 0;
+  background: rgba(15, 23, 42, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 100;
+  padding: ${({ theme }) => theme.space[4]};
+`;
+
+const Panel = styled.div`
+  width: 100%;
+  max-width: 620px;
+  max-height: 90vh;
+  overflow-y: auto;
+  background: ${({ theme }) => theme.colors.bg};
+  border-radius: ${({ theme }) => theme.radius.lg};
+  padding: ${({ theme }) => theme.space[6]};
+  position: relative;
+`;
+
+const CloseButton = styled.button`
+  position: absolute;
+  top: ${({ theme }) => theme.space[5]};
+  right: ${({ theme }) => theme.space[5]};
+  width: 32px;
+  height: 32px;
+  border-radius: ${({ theme }) => theme.radius.sm};
+  border: 1px solid ${({ theme }) => theme.colors.border};
+  background: ${({ theme }) => theme.colors.bg};
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+
+  &:hover {
+    background: ${({ theme }) => theme.colors.bgSubtle};
+  }
+`;
+
+const Title = styled.h2`
+  font-size: 20px;
+  font-weight: 700;
+  color: ${({ theme }) => theme.colors.navy};
+  margin-bottom: ${({ theme }) => theme.space[5]};
+  padding-right: ${({ theme }) => theme.space[8]};
+`;
 
 const Form = styled.form`
   display: flex;
@@ -11,29 +60,10 @@ const Form = styled.form`
   gap: ${({ theme }) => theme.space[4]};
 `;
 
-const GroupLabel = styled.div`
-  font-size: 12px;
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 0.04em;
-  color: ${({ theme }) => theme.colors.textSecondary};
-  margin-top: ${({ theme }) => theme.space[2]};
-`;
-
-const CheckboxRow = styled.label`
-  display: flex;
-  align-items: center;
-  gap: ${({ theme }) => theme.space[2]};
-  font-size: 13px;
-  color: ${({ theme }) => theme.colors.text};
-  cursor: pointer;
-  padding: 2px 0;
-`;
-
-const PermissionList = styled.div`
-  max-height: 260px;
-  overflow-y: auto;
-  padding-right: ${({ theme }) => theme.space[2]};
+const Row = styled.div`
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: ${({ theme }) => theme.space[4]};
 `;
 
 const ErrorText = styled.p`
@@ -41,73 +71,75 @@ const ErrorText = styled.p`
   font-size: 13px;
 `;
 
+const Actions = styled.div`
+  display: flex;
+  justify-content: flex-end;
+  gap: ${({ theme }) => theme.space[3]};
+  margin-top: ${({ theme }) => theme.space[2]};
+  padding-top: ${({ theme }) => theme.space[4]};
+  border-top: 1px solid ${({ theme }) => theme.colors.border};
+`;
+
 interface RoleFormModalProps {
   open: boolean;
-  permissions: PermissionDto[];
   submitting: boolean;
   error?: string;
   onClose: () => void;
   onSubmit: (payload: RoleUpsertRequest) => void;
 }
 
-export function RoleFormModal({ open, permissions, submitting, error, onClose, onSubmit }: RoleFormModalProps) {
+export function RoleFormModal({ open, submitting, error, onClose, onSubmit }: RoleFormModalProps) {
   const [name, setName] = useState('');
   const [description, setDescription] = useState('');
-  const [selected, setSelected] = useState<Set<number>>(new Set());
 
-  const byModule = useMemo(() => {
-    const grouped = new Map<string, PermissionDto[]>();
-    for (const permission of permissions) {
-      const list = grouped.get(permission.module) ?? [];
-      list.push(permission);
-      grouped.set(permission.module, list);
-    }
-    return grouped;
-  }, [permissions]);
+  if (!open) return null;
 
-  function toggle(id: number, checked: boolean) {
-    setSelected((prev) => {
-      const next = new Set(prev);
-      if (checked) next.add(id);
-      else next.delete(id);
-      return next;
-    });
-  }
+  const isValid = !!name.trim();
 
   function handleSubmit(e: FormEvent) {
     e.preventDefault();
-    onSubmit({ name: name.toUpperCase().replace(/\s+/g, '_'), description, permissionIds: [...selected] });
+    if (!isValid) return;
+    onSubmit({ name: name.toUpperCase().replace(/\s+/g, '_'), description });
   }
 
   return (
-    <Modal open={open} title="Create a custom role" onClose={onClose}>
-      <Form onSubmit={handleSubmit}>
-        <Input id="roleName" label="Role name" placeholder="WAREHOUSE_SUPERVISOR" value={name} onChange={(e) => setName(e.target.value)} required />
-        <Input id="roleDescription" label="Description" value={description} onChange={(e) => setDescription(e.target.value)} />
+    <Overlay onClick={onClose}>
+      <Panel onClick={(e) => e.stopPropagation()}>
+        <CloseButton type="button" onClick={onClose} aria-label="Close">
+          <CloseOutlined />
+        </CloseButton>
+        <Title>Create New Role</Title>
+        <Form onSubmit={handleSubmit}>
+          <Row>
+            <Input
+              id="roleName"
+              label="Title"
+              placeholder="WAREHOUSE_SUPERVISOR"
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              required
+            />
+            <Input
+              id="roleDescription"
+              label="Description (Optional)"
+              placeholder="optional"
+              value={description}
+              onChange={(e) => setDescription(e.target.value)}
+            />
+          </Row>
 
-        <PermissionList>
-          {[...byModule.entries()].map(([module, modulePermissions]) => (
-            <div key={module}>
-              <GroupLabel>{module}</GroupLabel>
-              {modulePermissions.map((permission) => (
-                <CheckboxRow key={permission.id}>
-                  <input
-                    type="checkbox"
-                    checked={selected.has(permission.id)}
-                    onChange={(e) => toggle(permission.id, e.target.checked)}
-                  />
-                  {permission.name}
-                </CheckboxRow>
-              ))}
-            </div>
-          ))}
-        </PermissionList>
+          {error && <ErrorText>{error}</ErrorText>}
 
-        {error && <ErrorText>{error}</ErrorText>}
-        <Button type="submit" fullWidth loading={submitting}>
-          Create role
-        </Button>
-      </Form>
-    </Modal>
+          <Actions>
+            <Button type="submit" disabled={!isValid} loading={submitting}>
+              Create Role
+            </Button>
+            <Button type="button" variant="secondary" onClick={onClose}>
+              Cancel
+            </Button>
+          </Actions>
+        </Form>
+      </Panel>
+    </Overlay>
   );
 }
