@@ -1,5 +1,5 @@
 import { useState, type FormEvent } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import styled from 'styled-components';
 import { MailOutlined, PhoneOutlined } from '@ant-design/icons';
 import { isAxiosError } from 'axios';
@@ -31,18 +31,47 @@ const LoginLink = styled.a`
   cursor: pointer;
 `;
 
+const TermsRow = styled.label`
+  display: flex;
+  align-items: flex-start;
+  gap: ${({ theme }) => theme.space[2]};
+  font-size: 13px;
+  line-height: 1.5;
+  color: ${({ theme }) => theme.colors.textSecondary};
+  cursor: pointer;
+`;
+
+const TermsCheckbox = styled.input`
+  margin-top: 3px;
+  width: 16px;
+  height: 16px;
+  flex-shrink: 0;
+  accent-color: ${({ theme }) => theme.colors.primary};
+`;
+
+const TermsLink = styled(Link)`
+  color: ${({ theme }) => theme.colors.primary};
+  font-weight: 600;
+
+  &:hover {
+    text-decoration: underline;
+  }
+`;
+
 export function RegisterCompanyPage() {
   const navigate = useNavigate();
   const { setAdminContact } = useOnboarding();
 
   const [adminEmail, setAdminEmail] = useState('');
   const [adminPhone, setAdminPhone] = useState('');
+  const [termsAccepted, setTermsAccepted] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [existingPortalId, setExistingPortalId] = useState('');
 
   async function handleSubmit(e: FormEvent) {
     e.preventDefault();
+    if (!termsAccepted) return;
     setError('');
     setExistingPortalId('');
     setLoading(true);
@@ -50,6 +79,7 @@ export function RegisterCompanyPage() {
       await onboardingService.register({
         adminEmail,
         adminPhone: adminPhone || undefined,
+        termsAccepted,
       });
       setAdminContact(adminEmail, adminPhone);
       navigate(ROUTE_PATHS.onboarding.verifyOtp);
@@ -108,7 +138,18 @@ export function RegisterCompanyPage() {
           value={adminPhone}
           onChange={(e) => setAdminPhone(e.target.value)}
         />
-        <Button type="submit" fullWidth loading={loading}>
+        <TermsRow>
+          <TermsCheckbox
+            type="checkbox"
+            checked={termsAccepted}
+            onChange={(e) => setTermsAccepted(e.target.checked)}
+          />
+          <span>
+            I agree to the <TermsLink to={ROUTE_PATHS.legal.terms} target="_blank">Terms of Service</TermsLink> and{' '}
+            <TermsLink to={ROUTE_PATHS.legal.privacy} target="_blank">Privacy Policy</TermsLink>.
+          </span>
+        </TermsRow>
+        <Button type="submit" fullWidth loading={loading} disabled={!termsAccepted}>
           Send verification code
         </Button>
       </Form>

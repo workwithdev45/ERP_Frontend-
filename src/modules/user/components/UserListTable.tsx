@@ -1,5 +1,6 @@
 import styled from 'styled-components';
-import { EditOutlined } from '@ant-design/icons';
+import { EyeOutlined, MoreOutlined, RedoOutlined, SendOutlined, StopOutlined } from '@ant-design/icons';
+import { ActionMenu, type ActionMenuItem } from '@/components/common/ActionMenu/ActionMenu';
 import { IconButton } from '@/components/common/IconButton/IconButton';
 import { Table, TableScroll, Td, Th } from '@/components/common/Table/Table';
 import { roleLabel } from '@/modules/accesscontrol/utils/roleLabel';
@@ -36,9 +37,13 @@ function formatDate(iso: string): string {
 interface UserListTableProps {
   users: UserSummary[];
   onViewUser: (user: UserSummary) => void;
+  onDeactivate: (user: UserSummary) => void;
+  onReactivate: (user: UserSummary) => void;
+  onResendInvite: (user: UserSummary) => void;
 }
 
-export function UserListTable({ users, onViewUser }: UserListTableProps) {
+/** G15: a three-dot row menu replaces the old edit-icon-only actions. */
+export function UserListTable({ users, onViewUser, onDeactivate, onReactivate, onResendInvite }: UserListTableProps) {
   return (
     <TableScroll>
       <Table>
@@ -57,6 +62,36 @@ export function UserListTable({ users, onViewUser }: UserListTableProps) {
         <tbody>
           {users.map((user) => {
             const name = memberName(user);
+            const items: ActionMenuItem[] = [
+              { key: 'view', label: 'View / Edit', icon: <EyeOutlined />, onSelect: () => onViewUser(user) },
+            ];
+            if (user.status === 'PENDING_VERIFICATION') {
+              items.push({
+                key: 'resend',
+                label: 'Resend invite',
+                icon: <SendOutlined />,
+                onSelect: () => onResendInvite(user),
+              });
+            }
+            if (user.status === 'ACTIVE') {
+              items.push({
+                key: 'deactivate',
+                label: 'Deactivate',
+                icon: <StopOutlined />,
+                danger: true,
+                divider: true,
+                onSelect: () => onDeactivate(user),
+              });
+            } else if (user.status === 'INACTIVE' || user.status === 'SUSPENDED') {
+              items.push({
+                key: 'reactivate',
+                label: 'Reactivate',
+                icon: <RedoOutlined />,
+                divider: true,
+                onSelect: () => onReactivate(user),
+              });
+            }
+
             return (
               <Row key={user.id} onClick={() => onViewUser(user)}>
                 <Td>
@@ -74,16 +109,15 @@ export function UserListTable({ users, onViewUser }: UserListTableProps) {
                   <UserStatusBadge status={user.status} />
                 </Td>
                 <Td $muted>{formatDate(user.createdAt)}</Td>
-                <Td $align="right">
-                  <IconButton
-                    aria-label={`Edit ${name}`}
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      onViewUser(user);
-                    }}
-                  >
-                    <EditOutlined />
-                  </IconButton>
+                <Td $align="right" onClick={(e) => e.stopPropagation()}>
+                  <ActionMenu
+                    items={items}
+                    trigger={(open) => (
+                      <IconButton aria-label={`Actions for ${name}`} onClick={open}>
+                        <MoreOutlined />
+                      </IconButton>
+                    )}
+                  />
                 </Td>
               </Row>
             );

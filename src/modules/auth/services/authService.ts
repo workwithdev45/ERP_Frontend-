@@ -2,6 +2,7 @@ import { apiClient } from '@/api/apiClient';
 import { API_ENDPOINTS } from '@/api/apiEndpoints';
 import type { ApiResponse } from '@/types/api.types';
 import type {
+  ChangePasswordRequest,
   ForgotPasswordRequest,
   LoginRequest,
   LoginResponse,
@@ -32,4 +33,7 @@ export const authService = {
     apiClient.post<ApiResponse<null>>(API_ENDPOINTS.auth.resetPassword, payload, {
       headers: portalId ? { 'X-Tenant-ID': portalId } : undefined,
     }),
+
+  changePassword: (payload: ChangePasswordRequest) =>
+    apiClient.post<ApiResponse<null>>(API_ENDPOINTS.auth.changePassword, payload),
 };

@@ -1,18 +1,34 @@
 import { StrictMode } from 'react';
 import { createRoot } from 'react-dom/client';
-import { RouterProvider } from 'react-router-dom';
-import { AuthProvider } from './context/AuthContext';
-import { ThemeModeProvider } from './context/ThemeContext';
-import { appRouter } from './routes/AppRoutes';
-import { GlobalStyle } from './styles/GlobalStyle';
+import { loadRuntimeConfig } from './config/app.config';
 
-createRoot(document.getElementById('root')!).render(
-  <StrictMode>
-    <ThemeModeProvider>
-      <GlobalStyle />
-      <AuthProvider>
-        <RouterProvider router={appRouter} />
-      </AuthProvider>
-    </ThemeModeProvider>
-  </StrictMode>,
-);
+/**
+ * G24: everything that reads APP_CONFIG.apiBaseUrl (the axios client, most of all) must not be
+ * imported until the runtime config has loaded — dynamic imports defer their module evaluation
+ * until this await resolves, so the API client picks up the fetched value, not the build-time one.
+ */
+async function bootstrap() {
+  await loadRuntimeConfig();
+
+  const [{ RouterProvider }, { AuthProvider }, { ThemeModeProvider }, { appRouter }, { GlobalStyle }] =
+    await Promise.all([
+      import('react-router-dom'),
+      import('./context/AuthContext'),
+      import('./context/ThemeContext'),
+      import('./routes/AppRoutes'),
+      import('./styles/GlobalStyle'),
+    ]);
+
+  createRoot(document.getElementById('root')!).render(
+    <StrictMode>
+      <ThemeModeProvider>
+        <GlobalStyle />
+        <AuthProvider>
+          <RouterProvider router={appRouter} />
+        </AuthProvider>
+      </ThemeModeProvider>
+    </StrictMode>,
+  );
+}
+
+bootstrap();

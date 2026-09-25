@@ -13,10 +13,14 @@ import { SetPasswordPage } from '@/modules/onboarding/pages/SetPasswordPage';
 import { OnboardingSuccessPage } from '@/modules/onboarding/pages/OnboardingSuccessPage';
 import { FindCompanyPage } from '@/modules/onboarding/pages/FindCompanyPage';
 import { AcceptInvitePage } from '@/modules/user/pages/AcceptInvitePage';
+import { LegalPage } from '@/modules/legal/pages/LegalPage';
 import { UsersPage } from '@/modules/user/pages/UsersPage';
 import { UserDetailPage } from '@/modules/user/pages/UserDetailPage';
 import { RolesPage } from '@/modules/accesscontrol/pages/RolesPage';
 import { PermissionsPage } from '@/modules/accesscontrol/pages/PermissionsPage';
+import { ModulesSettingsPage } from '@/modules/accesscontrol/pages/ModulesSettingsPage';
+import { CompanySettingsPage } from '@/modules/company/pages/CompanySettingsPage';
+import { ProfilePage } from '@/modules/user/pages/ProfilePage';
 import { SalesPage } from '@/modules/sales/pages/SalesPage';
 import { PurchasePage } from '@/modules/purchase/pages/PurchasePage';
 import { InventoryPage } from '@/modules/inventory/pages/InventoryPage';
@@ -78,6 +82,14 @@ export const appRouter = createBrowserRouter([
     element: <AcceptInvitePage />,
   },
   {
+    path: ROUTE_PATHS.legal.terms,
+    element: <LegalPage title="Terms of Service" />,
+  },
+  {
+    path: ROUTE_PATHS.legal.privacy,
+    element: <LegalPage title="Privacy Policy" />,
+  },
+  {
     element: <ProtectedRoute />,
     children: [
       {
@@ -85,6 +97,7 @@ export const appRouter = createBrowserRouter([
         children: [
           { path: ROUTE_PATHS.dashboard, element: <AdminDashboardPage /> },
           { path: ROUTE_PATHS.help, element: <HelpPage /> },
+          { path: ROUTE_PATHS.settings.profile, element: <ProfilePage /> },
           guarded('SALES_VIEW', { path: ROUTE_PATHS.sales, element: <SalesPage /> }),
           guarded('PURCHASE_VIEW', { path: ROUTE_PATHS.purchase, element: <PurchasePage /> }),
           guarded('INVENTORY_VIEW', { path: ROUTE_PATHS.inventory, element: <InventoryPage /> }),
@@ -102,6 +115,11 @@ export const appRouter = createBrowserRouter([
             'ROLE_MANAGE',
             { path: ROUTE_PATHS.settings.roles, element: <RolesPage /> },
             { path: ROUTE_PATHS.settings.permissions, element: <PermissionsPage /> },
+          ),
+          guarded(
+            'SETTINGS_MANAGE',
+            { path: ROUTE_PATHS.settings.company, element: <CompanySettingsPage /> },
+            { path: ROUTE_PATHS.settings.modules, element: <ModulesSettingsPage /> },
           ),
         ],
       },

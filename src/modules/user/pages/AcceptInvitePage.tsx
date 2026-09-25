@@ -6,11 +6,9 @@ import { Button } from '@/components/common/Button/Button';
 import { Input } from '@/components/common/Input/Input';
 import { OnboardingLayout } from '@/modules/onboarding/components/OnboardingLayout';
 import { ROUTE_PATHS } from '@/routes/routePaths';
+import { isStrongPassword, PASSWORD_POLICY_HINT } from '@/utils/passwordPolicy';
 import { userService } from '../services/userService';
 import type { ApiErrorResponse } from '@/modules/onboarding/types/onboarding.types';
-
-const MIN_PASSWORD_LENGTH = 8;
-const HAS_NUMBER = /\d/;
 
 const Form = styled.form`
   display: flex;
@@ -36,7 +34,7 @@ export function AcceptInvitePage() {
   const [done, setDone] = useState(false);
 
   const missingParams = !portalId || !email || !token;
-  const isValid = password.length >= MIN_PASSWORD_LENGTH && HAS_NUMBER.test(password);
+  const isValid = isStrongPassword(password);
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -87,7 +85,7 @@ export function AcceptInvitePage() {
           placeholder="••••••••"
           value={password}
           onChange={(e) => setPassword(e.target.value)}
-          hint="At least 8 characters, with at least one number."
+          hint={PASSWORD_POLICY_HINT}
           required
         />
         {error && <ErrorText>{error}</ErrorText>}

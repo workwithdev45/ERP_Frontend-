@@ -1,7 +1,16 @@
+import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import styled from 'styled-components';
-import { DownOutlined } from '@ant-design/icons';
+import { BankOutlined, DownOutlined, LockOutlined, LogoutOutlined, MenuOutlined, UserOutlined } from '@ant-design/icons';
+import { Button } from '@/components/common/Button/Button';
+import { ActionMenu } from '@/components/common/ActionMenu/ActionMenu';
+import { IconButton } from '@/components/common/IconButton/IconButton';
+import { Modal } from '@/components/common/Modal/Modal';
 import { ThemeToggle } from '@/components/common/ThemeToggle/ThemeToggle';
 import { useAuth } from '@/context/AuthContext';
+import { ChangePasswordModal } from '@/modules/auth/components/ChangePasswordModal';
+import { usePermission } from '@/hooks/usePermission';
+import { ROUTE_PATHS } from '@/routes/routePaths';
 
 const Bar = styled.header`
   height: ${({ theme }) => theme.layout.headerHeight};
@@ -23,6 +32,15 @@ const Actions = styled.div`
   display: flex;
   align-items: center;
   gap: ${({ theme }) => theme.space[1]};
+`;
+
+/** G19: opens the sidebar drawer — hidden once the sidebar has room to sit statically. */
+const MenuButton = styled(IconButton)`
+  display: none;
+
+  @media (max-width: 900px) {
+    display: inline-flex;
+  }
 `;
 
 const Divider = styled.span`
@@ -106,25 +124,99 @@ function humanizeRole(role: string) {
     .replace(/\b\w/g, (c) => c.toUpperCase());
 }
 
-export function Header() {
-  const { session } = useAuth();
+interface HeaderProps {
+  onMenuClick?: () => void;
+}
+
+export function Header({ onMenuClick }: HeaderProps) {
+  const { session, logout } = useAuth();
+  const navigate = useNavigate();
+  const { canAccess } = usePermission();
   const displayName = session?.username ?? 'Admin';
   const displayRole = session?.roles[0] ? humanizeRole(session.roles[0]) : 'Administrator';
 
+  const [changePasswordOpen, setChangePasswordOpen] = useState(false);
+  const [confirmLogoutOpen, setConfirmLogoutOpen] = useState(false);
+
+  function handleLogout() {
+    setConfirmLogoutOpen(false);
+    logout();
+    navigate(ROUTE_PATHS.auth.login, { replace: true });
+  }
+
   return (
     <Bar>
+      <MenuButton aria-label="Open navigation" onClick={onMenuClick}>
+        <MenuOutlined />
+      </MenuButton>
       <Actions>
         <ThemeToggle />
         <Divider />
-        <UserButton type="button" aria-label={`Account menu for ${displayName}`}>
-          <Avatar>{initials(displayName)}</Avatar>
-          <UserText>
-            <UserName>{displayName}</UserName>
-            <UserRole>{displayRole}</UserRole>
-          </UserText>
-          <DownOutlined />
-        </UserButton>
+        <ActionMenu
+          trigger={(open) => (
+            <UserButton type="button" aria-label={`Account menu for ${displayName}`} onClick={open}>
+              <Avatar>{initials(displayName)}</Avatar>
+              <UserText>
+                <UserName>{displayName}</UserName>
+                <UserRole>{displayRole}</UserRole>
+              </UserText>
+              <DownOutlined />
+            </UserButton>
+          )}
+          items={[
+            {
+              key: 'profile',
+              label: 'My profile',
+              icon: <UserOutlined />,
+              onSelect: () => navigate(ROUTE_PATHS.settings.profile),
+            },
+            {
+              key: 'change-password',
+              label: 'Change password',
+              icon: <LockOutlined />,
+              onSelect: () => setChangePasswordOpen(true),
+            },
+            ...(canAccess('SETTINGS_MANAGE')
+              ? [
+                  {
+                    key: 'company-settings',
+                    label: 'Company settings',
+                    icon: <BankOutlined />,
+                    onSelect: () => navigate(ROUTE_PATHS.settings.company),
+                  },
+                ]
+              : []),
+            {
+              key: 'logout',
+              label: 'Log out',
+              icon: <LogoutOutlined />,
+              danger: true,
+              divider: true,
+              onSelect: () => setConfirmLogoutOpen(true),
+            },
+          ]}
+        />
       </Actions>
+
+      <ChangePasswordModal open={changePasswordOpen} onClose={() => setChangePasswordOpen(false)} />
+
+      <Modal
+        open={confirmLogoutOpen}
+        title="Log out?"
+        onClose={() => setConfirmLogoutOpen(false)}
+        footer={
+          <>
+            <Button variant="secondary" onClick={() => setConfirmLogoutOpen(false)} autoFocus>
+              Cancel
+            </Button>
+            <Button variant="danger" leadingIcon={<LogoutOutlined />} onClick={handleLogout}>
+              Log out
+            </Button>
+          </>
+        }
+      >
+        <p>You'll be signed out and need to sign in again to continue.</p>
+      </Modal>
     </Bar>
   );
 }

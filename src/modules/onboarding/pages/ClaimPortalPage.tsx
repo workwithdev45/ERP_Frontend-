@@ -6,6 +6,7 @@ import { isAxiosError } from 'axios';
 import { BadgeText } from '@/components/common/Badge/Badge';
 import { Button } from '@/components/common/Button/Button';
 import { Input } from '@/components/common/Input/Input';
+import { Select } from '@/components/common/Select/Select';
 import { APP_CONFIG } from '@/config/app.config';
 import { useDebounce } from '@/hooks/useDebounce';
 import { ROUTE_PATHS } from '@/routes/routePaths';
@@ -15,6 +16,12 @@ import { onboardingService } from '../services/onboardingService';
 import type { ApiErrorResponse } from '../types/onboarding.types';
 
 const PORTAL_ID_PATTERN = /^[a-z0-9-]{3,}$/;
+
+const BUSINESS_TYPE_OPTIONS = [
+  { value: 'TRADER', label: 'Trader — I buy and sell goods' },
+  { value: 'MANUFACTURER', label: 'Manufacturer — I produce goods' },
+  { value: 'SERVICES', label: 'Services — I don’t hold physical stock' },
+];
 
 const Form = styled.form`
   display: flex;
@@ -49,6 +56,7 @@ export function ClaimPortalPage() {
   const { adminEmail, registrationToken, setPortal } = useOnboarding();
 
   const [portalId, setPortalId] = useState('');
+  const [businessType, setBusinessType] = useState('');
   const [startBlank, setStartBlank] = useState(false);
   const [checking, setChecking] = useState(false);
   const [available, setAvailable] = useState<boolean | null>(null);
@@ -87,7 +95,7 @@ export function ClaimPortalPage() {
   }, [debouncedPortalId]);
 
   const isValidFormat = PORTAL_ID_PATTERN.test(portalId);
-  const canSubmit = isValidFormat && available === true && !submitting;
+  const canSubmit = isValidFormat && available === true && !!businessType && !submitting;
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -100,6 +108,7 @@ export function ClaimPortalPage() {
         registrationToken,
         portalId,
         startBlank,
+        businessType,
       });
       setPortal(portalId, startBlank);
       navigate(ROUTE_PATHS.onboarding.setPassword);
@@ -155,6 +164,16 @@ export function ClaimPortalPage() {
             {hint.text}
           </AvailabilityHint>
         )}
+        <Select
+          id="businessType"
+          label="What does your business do?"
+          placeholder="Select business type"
+          options={BUSINESS_TYPE_OPTIONS}
+          value={businessType}
+          onChange={(e) => setBusinessType(e.target.value)}
+          hint="We'll switch on the modules that fit — you can change any of them later."
+          required
+        />
         <CheckboxRow>
           <input
             type="checkbox"

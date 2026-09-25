@@ -8,6 +8,8 @@ export type OnboardingStatus =
 export interface RegisterCompanyRequest {
   adminEmail: string;
   adminPhone?: string;
+  /** G11: required the first time this email registers; a resend doesn't need to resend it. */
+  termsAccepted?: boolean;
 }
 
 export interface RegisterCompanyResponse {
@@ -25,6 +27,8 @@ export interface VerifyOtpResponse {
   error: boolean;
   message: string;
   registrationToken?: string;
+  /** Set when this email already reserved a workspace in an earlier, abandoned signup attempt (G1). */
+  existingPortalId?: string;
 }
 
 export interface CheckPortalIdResponse {
@@ -38,6 +42,8 @@ export interface ReservePortalRequest {
   registrationToken: string;
   portalId: string;
   startBlank: boolean;
+  /** G10: Trader / Manufacturer / Services — presets which modules start enabled. */
+  businessType?: string;
 }
 
 export interface ReservePortalResponse {
@@ -56,21 +62,30 @@ export interface SetAdminPasswordResponse {
   error: boolean;
   message: string;
   portalUrl?: string;
+  /** Present so the client can sign the new admin straight in (G2) instead of sending them to /login. */
+  accessToken?: string;
+  refreshToken?: string;
+  tokenType?: string;
+  expiresIn?: number;
+  tenantId?: string;
+  tenantName?: string;
+  username?: string;
+  email?: string;
+  roles?: string[];
+  permissions?: string[];
 }
 
 export interface FindCompanyRequest {
   userEmail: string;
 }
 
-export interface WorkspaceSummary {
-  portalId: string;
-  name: string;
-}
-
+/**
+ * The backend never reveals whether a workspace matched (G4) — it always returns the same
+ * generic message and emails any matches instead.
+ */
 export interface FindCompanyResponse {
   error: boolean;
   message: string;
-  data?: WorkspaceSummary[];
 }
 
 export interface ApiErrorResponse {

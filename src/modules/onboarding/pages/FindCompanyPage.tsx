@@ -2,13 +2,13 @@ import { useState, type FormEvent } from 'react';
 import { useNavigate } from 'react-router-dom';
 import styled from 'styled-components';
 import { isAxiosError } from 'axios';
+import { CheckOutlined } from '@ant-design/icons';
 import { Button } from '@/components/common/Button/Button';
 import { Input } from '@/components/common/Input/Input';
 import { ROUTE_PATHS } from '@/routes/routePaths';
 import { OnboardingLayout } from '../components/OnboardingLayout';
-import { OptionRow } from '../components/OptionRow';
 import { onboardingService } from '../services/onboardingService';
-import type { ApiErrorResponse, WorkspaceSummary } from '../types/onboarding.types';
+import type { ApiErrorResponse } from '../types/onboarding.types';
 
 const Form = styled.form`
   display: flex;
@@ -21,10 +21,23 @@ const ErrorText = styled.p`
   font-size: 13px;
 `;
 
-const ListLabel = styled.p`
-  margin-bottom: ${({ theme }) => theme.space[3]};
-  font-size: 13px;
-  font-weight: 600;
+const DoneIcon = styled.div`
+  width: 56px;
+  height: 56px;
+  margin-bottom: ${({ theme }) => theme.space[4]};
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 24px;
+  color: ${({ theme }) => theme.colors.successDark};
+  background: ${({ theme }) => theme.colors.successLight};
+`;
+
+const Text = styled.p`
+  margin-bottom: ${({ theme }) => theme.space[5]};
+  font-size: 14px;
+  line-height: 1.6;
   color: ${({ theme }) => theme.colors.textSecondary};
 `;
 
@@ -42,44 +55,24 @@ const BackLink = styled.button`
   }
 `;
 
-function initial(name: string) {
-  return name.trim().charAt(0).toUpperCase() || '#';
-}
-
+/**
+ * The backend never confirms or denies whether an email is linked to a workspace (G4) — it
+ * always shows this same message and, if there's a match, emails the sign-in link(s) instead.
+ */
 export function FindCompanyPage() {
   const navigate = useNavigate();
   const [userEmail, setUserEmail] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
-  const [workspaces, setWorkspaces] = useState<WorkspaceSummary[]>([]);
-
-  function goToLogin(workspace: WorkspaceSummary) {
-    const params = new URLSearchParams({ workspace: workspace.portalId });
-    navigate(`${ROUTE_PATHS.auth.login}?${params}`, {
-      state: { workspaceName: workspace.name, email: userEmail },
-    });
-  }
+  const [sent, setSent] = useState(false);
 
   async function handleSubmit(e: FormEvent) {
     e.preventDefault();
     setError('');
-    setWorkspaces([]);
     setLoading(true);
     try {
-      const { data } = await onboardingService.find({ userEmail });
-      if (!Array.isArray(data.data)) {
-        // Server didn't return a workspace list (e.g. an older backend build) — don't claim "not linked".
-        setError('Something went wrong. Please try again.');
-        return;
-      }
-      const found = data.data;
-      if (found.length === 1) {
-        goToLogin(found[0]);
-      } else if (found.length > 1) {
-        setWorkspaces(found);
-      } else {
-        setError('This email is not linked to any company workspace.');
-      }
+      await onboardingService.find({ userEmail });
+      setSent(true);
     } catch (err) {
       if (isAxiosError<ApiErrorResponse>(err) && err.response?.data?.message) {
         setError(err.response.data.message);
@@ -91,26 +84,19 @@ export function FindCompanyPage() {
     }
   }
 
-  if (workspaces.length > 1) {
+  if (sent) {
     return (
-      <OnboardingLayout
-        title="Choose your workspace"
-        subtitle={`${userEmail} has access to ${workspaces.length} workspaces. Pick the one you want to sign in to.`}
-      >
-        <ListLabel>Your workspaces</ListLabel>
-        {workspaces.map((workspace) => (
-          <OptionRow
-            key={workspace.portalId}
-            icon={initial(workspace.name)}
-            iconBg="#1F5AD6"
-            title={workspace.name}
-            description={workspace.portalId}
-            onClick={() => goToLogin(workspace)}
-          />
-        ))}
-        <BackLink type="button" onClick={() => setWorkspaces([])}>
-          Use a different email
-        </BackLink>
+      <OnboardingLayout>
+        <DoneIcon aria-hidden="true">
+          <CheckOutlined />
+        </DoneIcon>
+        <Text>
+          If <strong>{userEmail}</strong> is linked to a company workspace, we've sent its sign-in link(s) to that
+          address.
+        </Text>
+        <Button fullWidth onClick={() => navigate(ROUTE_PATHS.auth.login)}>
+          Back to sign in
+        </Button>
       </OnboardingLayout>
     );
   }
@@ -118,7 +104,7 @@ export function FindCompanyPage() {
   return (
     <OnboardingLayout
       title="Find your company's workspace"
-      subtitle="Enter your work email and we'll take you straight to your company's workspace."
+      subtitle="Enter your work email and, if it's linked to a workspace, we'll email you the sign-in link."
     >
       <Form onSubmit={handleSubmit}>
         <Input

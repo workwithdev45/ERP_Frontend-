@@ -8,6 +8,7 @@ import { Input } from '@/components/common/Input/Input';
 import { useAuth } from '@/context/AuthContext';
 import { OnboardingLayout } from '@/modules/onboarding/components/OnboardingLayout';
 import { ROUTE_PATHS } from '@/routes/routePaths';
+import { detectWorkspaceFromHost } from '@/utils/subdomain';
 import { authService } from '../services/authService';
 import type { ApiErrorResponse } from '../types/auth.types';
 
@@ -22,6 +23,18 @@ const ErrorText = styled.p`
   color: ${({ theme }) => theme.colors.danger};
   font-size: 13px;
   text-align: center;
+`;
+
+const WorkspaceBadge = styled.div`
+  display: flex;
+  align-items: center;
+  gap: ${({ theme }) => theme.space[2]};
+  padding: ${({ theme }) => theme.space[3]};
+  border-radius: ${({ theme }) => theme.radius.md};
+  background: ${({ theme }) => theme.colors.primaryLight};
+  color: ${({ theme }) => theme.colors.primaryDarker};
+  font-weight: ${({ theme }) => theme.fontWeight.semibold};
+  font-size: ${({ theme }) => theme.fontSize.md};
 `;
 
 const ForgotLink = styled(Link)`
@@ -42,6 +55,8 @@ interface LoginLocationState {
   email?: string;
 }
 
+const subdomainWorkspace = detectWorkspaceFromHost();
+
 export function LoginPage() {
   const navigate = useNavigate();
   const { login } = useAuth();
@@ -49,7 +64,7 @@ export function LoginPage() {
   const locationState = (useLocation().state ?? {}) as LoginLocationState;
   const workspaceFromLink = searchParams.get('workspace') ?? '';
 
-  const [portalId, setPortalId] = useState(workspaceFromLink);
+  const [portalId, setPortalId] = useState(subdomainWorkspace ?? workspaceFromLink);
   const [usernameOrEmail, setUsernameOrEmail] = useState(locationState.email ?? '');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
@@ -83,17 +98,23 @@ export function LoginPage() {
   return (
     <OnboardingLayout title="Welcome back" subtitle="Sign in to your company workspace.">
       <Form onSubmit={handleSubmit}>
-        <Input
-          id="portalId"
-          type="text"
-          label="Workspace ID"
-          placeholder="e.g. acme-traders"
-          prefixIcon={<ShopOutlined />}
-          value={portalId}
-          onChange={(e) => setPortalId(e.target.value)}
-          hint={workspaceHint}
-          required
-        />
+        {subdomainWorkspace ? (
+          <WorkspaceBadge>
+            <ShopOutlined /> {subdomainWorkspace}
+          </WorkspaceBadge>
+        ) : (
+          <Input
+            id="portalId"
+            type="text"
+            label="Workspace ID"
+            placeholder="e.g. acme-traders"
+            prefixIcon={<ShopOutlined />}
+            value={portalId}
+            onChange={(e) => setPortalId(e.target.value)}
+            hint={workspaceHint}
+            required
+          />
+        )}
         <Input
           id="usernameOrEmail"
           type="text"

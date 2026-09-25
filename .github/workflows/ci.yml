@@ -1,0 +1,25 @@
+name: CI
+
+# G20: lint/typecheck/tests used to only ever run at release time (see deploy.yml), so a broken
+# build could sit on dev_release for weeks before anyone noticed. This runs on every push/PR.
+on:
+  push:
+    branches: [main, dev_release]
+  pull_request:
+    branches: [main, dev_release]
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: npm
+
+      - run: npm ci
+      - run: npm run lint
+      - run: npx tsc -b
+      - run: npm run test

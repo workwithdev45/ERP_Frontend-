@@ -41,7 +41,7 @@ const ErrorText = styled.p`
 
 export function VerifyOtpPage() {
   const navigate = useNavigate();
-  const { adminEmail, setRegistrationToken } = useOnboarding();
+  const { adminEmail, setRegistrationToken, setPortal } = useOnboarding();
 
   const [otp, setOtp] = useState<string[]>(Array(APP_CONFIG.otpLength).fill(''));
   const [invalid, setInvalid] = useState(false);
@@ -72,7 +72,14 @@ export function VerifyOtpPage() {
     try {
       const { data } = await onboardingService.verifyOtp({ adminEmail, otp: code });
       setRegistrationToken(data.registrationToken ?? '');
-      navigate(ROUTE_PATHS.onboarding.claimPortal);
+      if (data.existingPortalId) {
+        // This email already reserved a workspace in an earlier, abandoned signup (G1) —
+        // send them straight to set a password instead of making them pick a workspace ID again.
+        setPortal(data.existingPortalId, false);
+        navigate(ROUTE_PATHS.onboarding.setPassword);
+      } else {
+        navigate(ROUTE_PATHS.onboarding.claimPortal);
+      }
     } catch (err) {
       if (isAxiosError<ApiErrorResponse>(err) && err.response?.data?.message) {
         setError(err.response.data.message);

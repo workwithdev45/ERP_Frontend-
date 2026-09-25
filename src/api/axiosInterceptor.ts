@@ -11,6 +11,14 @@ interface RetriableConfig extends InternalAxiosRequestConfig {
 
 let refreshPromise: Promise<string | null> | null = null;
 
+/** G18: fired whenever the session is invalidated so AuthContext can react and redirect to /login. */
+export const SESSION_EXPIRED_EVENT = 'auth:session-expired';
+
+function endSession() {
+  authStorage.clear();
+  window.dispatchEvent(new Event(SESSION_EXPIRED_EVENT));
+}
+
 async function refreshAccessToken(): Promise<string | null> {
   const refreshToken = authStorage.getRefreshToken();
   if (!refreshToken) return null;
@@ -23,7 +31,6 @@ async function refreshAccessToken(): Promise<string | null> {
     authStorage.saveRefreshedTokens(data.data);
     return data.data.accessToken;
   } catch {
-    authStorage.clear();
     return null;
   }
 }
@@ -55,6 +62,9 @@ export function installAuthInterceptor(client: AxiosInstance) {
 
       const newAccessToken = await refreshPromise;
       if (!newAccessToken) {
+        // The session can no longer be renewed — clear it and let every open tab/component
+        // react (ProtectedRoute redirects once AuthContext's session state clears).
+        endSession();
         return Promise.reject(error);
       }
 

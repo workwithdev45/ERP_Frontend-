@@ -5,16 +5,13 @@ import { EyeInvisibleOutlined, EyeOutlined } from '@ant-design/icons';
 import { isAxiosError } from 'axios';
 import { Button } from '@/components/common/Button/Button';
 import { Input } from '@/components/common/Input/Input';
+import { useAuth } from '@/context/AuthContext';
 import { ROUTE_PATHS } from '@/routes/routePaths';
+import { isStrongPassword, PASSWORD_POLICY_HINT, passwordStrengthScore } from '@/utils/passwordPolicy';
 import { OnboardingLayout } from '../components/OnboardingLayout';
 import { useOnboarding } from '../context/OnboardingContext';
 import { onboardingService } from '../services/onboardingService';
 import type { ApiErrorResponse } from '../types/onboarding.types';
-
-const MIN_PASSWORD_LENGTH = 8;
-const HAS_NUMBER = /\d/;
-const HAS_UPPER = /[A-Z]/;
-const HAS_SYMBOL = /[^A-Za-z0-9]/;
 
 const Form = styled.form`
   display: flex;
@@ -43,18 +40,10 @@ const StrengthFill = styled.div<{ $pct: number; $tone: 'weak' | 'ok' | 'strong' 
   transition: width ${({ theme }) => theme.transition.base};
 `;
 
-function computeStrength(password: string) {
-  let score = 0;
-  if (password.length >= MIN_PASSWORD_LENGTH) score += 1;
-  if (HAS_NUMBER.test(password)) score += 1;
-  if (HAS_UPPER.test(password)) score += 1;
-  if (HAS_SYMBOL.test(password)) score += 1;
-  return score;
-}
-
 export function SetPasswordPage() {
   const navigate = useNavigate();
   const { adminEmail, portalId, registrationToken, setPortalUrl } = useOnboarding();
+  const { login } = useAuth();
 
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
@@ -67,8 +56,8 @@ export function SetPasswordPage() {
     }
   }, [adminEmail, portalId, registrationToken, navigate]);
 
-  const isValid = password.length >= MIN_PASSWORD_LENGTH && HAS_NUMBER.test(password);
-  const strengthScore = computeStrength(password);
+  const isValid = isStrongPassword(password);
+  const strengthScore = passwordStrengthScore(password);
   const strengthTone = strengthScore <= 1 ? 'weak' : strengthScore <= 2 ? 'ok' : 'strong';
 
   async function handleSubmit(e: React.FormEvent) {
@@ -84,6 +73,22 @@ export function SetPasswordPage() {
         adminPassword: password,
       });
       setPortalUrl(data.portalUrl ?? '');
+      // Sign the new admin straight in (G2) so the success screen's redirect to the
+      // dashboard lands on a real session instead of bouncing back to /login.
+      if (data.accessToken && data.refreshToken) {
+        login(portalId, {
+          accessToken: data.accessToken,
+          refreshToken: data.refreshToken,
+          tokenType: data.tokenType ?? 'Bearer',
+          expiresIn: data.expiresIn ?? 0,
+          tenantId: data.tenantId ?? portalId,
+          tenantName: data.tenantName ?? portalId,
+          username: data.username ?? adminEmail,
+          email: data.email ?? adminEmail,
+          roles: data.roles ?? [],
+          permissions: data.permissions ?? [],
+        });
+      }
       navigate(ROUTE_PATHS.onboarding.success);
     } catch (err) {
       if (isAxiosError<ApiErrorResponse>(err) && err.response?.data?.message) {
@@ -111,7 +116,7 @@ export function SetPasswordPage() {
           onChange={(e) => setPassword(e.target.value)}
           suffixIcon={showPassword ? <EyeInvisibleOutlined /> : <EyeOutlined />}
           onSuffixIconClick={() => setShowPassword((prev) => !prev)}
-          hint="At least 8 characters, with at least one number."
+          hint={PASSWORD_POLICY_HINT}
           required
         />
         {password.length > 0 && (

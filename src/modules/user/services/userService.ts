@@ -28,6 +28,8 @@ export const userService = {
   reactivate: (id: number) =>
     apiClient.put<ApiResponse<UserSummary>>(API_ENDPOINTS.users.byId(id), { status: 'ACTIVE' }),
 
+  resendInvite: (id: number) => apiClient.post<ApiResponse<UserSummary>>(API_ENDPOINTS.users.resendInvite(id)),
+
   acceptInvite: (payload: AcceptUserInviteRequest, portalId: string) =>
     apiClient.post<ApiResponse<void>>(API_ENDPOINTS.users.acceptInvite, payload, {
       headers: { 'X-Tenant-ID': portalId },

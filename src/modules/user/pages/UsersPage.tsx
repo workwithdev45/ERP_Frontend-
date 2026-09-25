@@ -146,6 +146,33 @@ export function UsersPage() {
     setSelectedUser(null);
   }
 
+  async function handleDeactivate(user: UserSummary) {
+    if (!window.confirm(`Deactivate ${memberName(user)}? They'll lose access to this workspace.`)) return;
+    try {
+      await userService.deactivate(user.id);
+      await loadUsers();
+    } catch (err) {
+      setLoadError(apiErrorMessage(err, 'Could not deactivate this member.'));
+    }
+  }
+
+  async function handleReactivate(user: UserSummary) {
+    try {
+      const { data } = await userService.reactivate(user.id);
+      setUsers((prev) => prev.map((u) => (u.id === user.id ? data.data : u)));
+    } catch (err) {
+      setLoadError(apiErrorMessage(err, 'Could not reactivate this member.'));
+    }
+  }
+
+  async function handleResendInvite(user: UserSummary) {
+    try {
+      await userService.resendInvite(user.id);
+    } catch (err) {
+      setLoadError(apiErrorMessage(err, 'Could not resend the invite.'));
+    }
+  }
+
   function renderBody() {
     if (loading) {
       return <Empty>Loading members…</Empty>;
@@ -172,7 +199,15 @@ export function UsersPage() {
     if (visibleUsers.length === 0) {
       return <Empty>No members match your filters.</Empty>;
     }
-    return <UserListTable users={visibleUsers} onViewUser={setSelectedUser} />;
+    return (
+      <UserListTable
+        users={visibleUsers}
+        onViewUser={setSelectedUser}
+        onDeactivate={handleDeactivate}
+        onReactivate={handleReactivate}
+        onResendInvite={handleResendInvite}
+      />
+    );
   }
 
   return (

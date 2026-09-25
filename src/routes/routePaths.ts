@@ -14,6 +14,10 @@ export const ROUTE_PATHS = {
     forgotPassword: '/forgot-password',
     resetPassword: '/reset-password',
   },
+  legal: {
+    terms: '/terms',
+    privacy: '/privacy',
+  },
   dashboard: '/dashboard',
   acceptInvite: '/accept-invite',
   sales: '/sales',
@@ -30,5 +34,8 @@ export const ROUTE_PATHS = {
     userDetail: (id: number | string) => `/settings/users/${id}`,
     roles: '/settings/roles',
     permissions: '/settings/permissions',
+    profile: '/settings/profile',
+    company: '/settings/company',
+    modules: '/settings/modules',
   },
 } as const;

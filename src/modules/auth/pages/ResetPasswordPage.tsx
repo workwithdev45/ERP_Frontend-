@@ -7,11 +7,9 @@ import { Button } from '@/components/common/Button/Button';
 import { Input } from '@/components/common/Input/Input';
 import { OnboardingLayout } from '@/modules/onboarding/components/OnboardingLayout';
 import { ROUTE_PATHS } from '@/routes/routePaths';
+import { isStrongPassword, PASSWORD_POLICY_HINT } from '@/utils/passwordPolicy';
 import { authService } from '../services/authService';
 import type { ApiErrorResponse } from '../types/auth.types';
-
-const MIN_PASSWORD_LENGTH = 8;
-const HAS_NUMBER = /\d/;
 
 const Form = styled.form`
   display: flex;
@@ -77,7 +75,7 @@ export function ResetPasswordPage() {
   const loginHref = `${ROUTE_PATHS.auth.login}${workspaceQuery}`;
   const forgotHref = `${ROUTE_PATHS.auth.forgotPassword}${workspaceQuery}`;
 
-  const meetsRules = password.length >= MIN_PASSWORD_LENGTH && HAS_NUMBER.test(password);
+  const meetsRules = isStrongPassword(password);
   const matches = confirm.length > 0 && confirm === password;
   const canSubmit = meetsRules && matches;
 
@@ -145,7 +143,7 @@ export function ResetPasswordPage() {
           onSuffixIconClick={() => setShowPassword((prev) => !prev)}
           value={password}
           onChange={(e) => setPassword(e.target.value)}
-          hint="At least 8 characters, with at least one number."
+          hint={PASSWORD_POLICY_HINT}
           autoFocus
           required
         />

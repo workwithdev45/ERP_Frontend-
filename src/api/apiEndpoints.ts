@@ -5,6 +5,7 @@ export const API_ENDPOINTS = {
     refreshToken: '/auth/refresh-token',
     forgotPassword: '/auth/forgot-password',
     resetPassword: '/auth/reset-password',
+    changePassword: '/auth/change-password',
   },
   companies: {
     register: '/companies/register',
@@ -19,6 +20,7 @@ export const API_ENDPOINTS = {
     byId: (id: number) => `/users/${id}`,
     invite: '/users/invite',
     acceptInvite: '/users/accept-invite',
+    resendInvite: (id: number) => `/users/${id}/resend-invite`,
     permissions: (userId: number) => `/users/${userId}/permissions`,
     modulePermission: (userId: number, moduleCode: string) => `/users/${userId}/permissions/${moduleCode}`,
   },
@@ -35,5 +37,11 @@ export const API_ENDPOINTS = {
   modules: {
     list: '/modules',
     actions: '/modules/actions',
+    enabled: '/modules/enabled',
+    setEnabled: (moduleCode: string) => `/modules/${moduleCode}`,
+  },
+  company: {
+    get: '/company',
+    update: '/company',
   },
 } as const;

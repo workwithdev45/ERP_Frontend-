@@ -1,5 +1,9 @@
-import { Outlet } from 'react-router-dom';
+import { useCallback, useState } from 'react';
+import { Outlet, useNavigate } from 'react-router-dom';
 import styled from 'styled-components';
+import { useAuth } from '@/context/AuthContext';
+import { useIdleLogout } from '@/hooks/useIdleLogout';
+import { ROUTE_PATHS } from '@/routes/routePaths';
 import { authStorage } from '@/utils/authStorage';
 import { Header } from './Header';
 import { Sidebar } from './Sidebar';
@@ -31,12 +35,26 @@ const Content = styled.main`
 
 export function MainLayout() {
   const session = authStorage.getSession();
+  const { logout } = useAuth();
+  const navigate = useNavigate();
+  const [mobileNavOpen, setMobileNavOpen] = useState(false);
+
+  const handleIdle = useCallback(() => {
+    logout();
+    navigate(ROUTE_PATHS.auth.login, { replace: true });
+  }, [logout, navigate]);
+
+  useIdleLogout(handleIdle);
 
   return (
     <Shell>
-      <Sidebar companyName={session?.tenantName} />
+      <Sidebar
+        companyName={session?.tenantName}
+        mobileOpen={mobileNavOpen}
+        onCloseMobile={() => setMobileNavOpen(false)}
+      />
       <Main>
-        <Header />
+        <Header onMenuClick={() => setMobileNavOpen(true)} />
         <Content>
           <Outlet />
         </Content>

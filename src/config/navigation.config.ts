@@ -1,6 +1,7 @@
 import {
   AppstoreOutlined,
   AccountBookOutlined,
+  BankOutlined,
   BarChartOutlined,
   BuildOutlined,
   InboxOutlined,
@@ -11,8 +12,10 @@ import {
   ShoppingCartOutlined,
   SolutionOutlined,
   TeamOutlined,
+  ToolOutlined,
   UserOutlined,
 } from '@ant-design/icons';
+import type { ModuleCode } from '@/modules/accesscontrol/types/rbac.types';
 
 /** Any Ant Design icon component (they all share one type). */
 export type NavIcon = typeof AppstoreOutlined;
@@ -24,6 +27,8 @@ export interface NavItem {
   path: string;
   /** Permission needed to see this item (ADMIN always can, matching the backend's @PreAuthorize). Omit for items every signed-in user sees. */
   permission?: string;
+  /** G14: hidden when this tenant has switched the module off, regardless of permission. */
+  module?: ModuleCode;
 }
 
 export interface NavSection {
@@ -38,26 +43,26 @@ export const NAV_SECTIONS: NavSection[] = [
     label: 'Overview',
     items: [
       { key: 'dashboard', label: 'Dashboard', icon: AppstoreOutlined, path: '/dashboard' },
-      { key: 'reports', label: 'Reports', icon: BarChartOutlined, path: '/reports', permission: 'REPORTS_VIEW' },
+      { key: 'reports', label: 'Reports', icon: BarChartOutlined, path: '/reports', permission: 'REPORTS_VIEW', module: 'REPORTS' },
     ],
   },
   {
     key: 'operations',
     label: 'Operations',
     items: [
-      { key: 'sales', label: 'Sales', icon: RiseOutlined, path: '/sales', permission: 'SALES_VIEW' },
-      { key: 'purchase', label: 'Purchase', icon: ShoppingCartOutlined, path: '/purchase', permission: 'PURCHASE_VIEW' },
-      { key: 'inventory', label: 'Inventory', icon: InboxOutlined, path: '/inventory', permission: 'INVENTORY_VIEW' },
-      { key: 'production', label: 'Production', icon: BuildOutlined, path: '/production', permission: 'PRODUCTION_VIEW' },
+      { key: 'sales', label: 'Sales', icon: RiseOutlined, path: '/sales', permission: 'SALES_VIEW', module: 'SALES' },
+      { key: 'purchase', label: 'Purchase', icon: ShoppingCartOutlined, path: '/purchase', permission: 'PURCHASE_VIEW', module: 'PURCHASE' },
+      { key: 'inventory', label: 'Inventory', icon: InboxOutlined, path: '/inventory', permission: 'INVENTORY_VIEW', module: 'INVENTORY' },
+      { key: 'production', label: 'Production', icon: BuildOutlined, path: '/production', permission: 'PRODUCTION_VIEW', module: 'PRODUCTION' },
     ],
   },
   {
     key: 'finance',
     label: 'Finance & People',
     items: [
-      { key: 'accounts', label: 'Accounts', icon: AccountBookOutlined, path: '/accounts', permission: 'ACCOUNTS_VIEW' },
-      { key: 'crm', label: 'CRM', icon: SolutionOutlined, path: '/crm', permission: 'CRM_VIEW' },
-      { key: 'hr', label: 'HR & Payroll', icon: TeamOutlined, path: '/hr', permission: 'HR_VIEW' },
+      { key: 'accounts', label: 'Accounts', icon: AccountBookOutlined, path: '/accounts', permission: 'ACCOUNTS_VIEW', module: 'ACCOUNTS' },
+      { key: 'crm', label: 'CRM', icon: SolutionOutlined, path: '/crm', permission: 'CRM_VIEW', module: 'CRM' },
+      { key: 'hr', label: 'HR & Payroll', icon: TeamOutlined, path: '/hr', permission: 'HR_VIEW', module: 'HR' },
     ],
   },
   {
@@ -67,6 +72,8 @@ export const NAV_SECTIONS: NavSection[] = [
       { key: 'members', label: 'Members', icon: UserOutlined, path: '/settings/users', permission: 'USER_MANAGE' },
       { key: 'roles', label: 'Roles', icon: SafetyCertificateOutlined, path: '/settings/roles', permission: 'ROLE_MANAGE' },
       { key: 'permissions', label: 'Permissions', icon: KeyOutlined, path: '/settings/permissions', permission: 'ROLE_MANAGE' },
+      { key: 'company', label: 'Company', icon: BankOutlined, path: '/settings/company', permission: 'SETTINGS_MANAGE' },
+      { key: 'modules', label: 'Modules', icon: ToolOutlined, path: '/settings/modules', permission: 'SETTINGS_MANAGE' },
     ],
   },
 ];

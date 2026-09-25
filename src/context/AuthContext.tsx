@@ -1,4 +1,5 @@
-import { createContext, useContext, useMemo, useState, type ReactNode } from 'react';
+import { createContext, useContext, useEffect, useMemo, useState, type ReactNode } from 'react';
+import { SESSION_EXPIRED_EVENT } from '@/api/axiosInterceptor';
 import type { LoginResponse } from '@/modules/auth/types/auth.types';
 import { authStorage, type StoredSession } from '@/utils/authStorage';
 
@@ -13,6 +14,17 @@ const AuthContext = createContext<AuthContextValue | null>(null);
 
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [session, setSession] = useState<StoredSession | null>(() => authStorage.getSession());
+
+  // G18: a refresh failure (expired/invalid session) clears storage from the axios interceptor,
+  // outside React — without this, ProtectedRoute's isAuthenticated check would stay stale and
+  // never redirect to /login.
+  useEffect(() => {
+    function handleSessionExpired() {
+      setSession(null);
+    }
+    window.addEventListener(SESSION_EXPIRED_EVENT, handleSessionExpired);
+    return () => window.removeEventListener(SESSION_EXPIRED_EVENT, handleSessionExpired);
+  }, []);
 
   const value = useMemo<AuthContextValue>(
     () => ({

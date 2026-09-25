@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import styled, { css } from 'styled-components';
 import { LogoutOutlined, MenuFoldOutlined, MenuUnfoldOutlined } from '@ant-design/icons';
@@ -7,6 +7,8 @@ import { Modal } from '@/components/common/Modal/Modal';
 import { NAV_SECTIONS, SECONDARY_NAV, findNavItem, type NavItem } from '@/config/navigation.config';
 import { useAuth } from '@/context/AuthContext';
 import { usePermission } from '@/hooks/usePermission';
+import { rbacService } from '@/modules/accesscontrol/services/rbacService';
+import type { ModuleCode } from '@/modules/accesscontrol/types/rbac.types';
 import { ROUTE_PATHS } from '@/routes/routePaths';
 
 const COLLAPSED_KEY = 'erp.sidebar.collapsed';
@@ -27,7 +29,7 @@ function writeCollapsed(value: boolean) {
   }
 }
 
-const Rail = styled.aside<{ $collapsed: boolean }>`
+const Rail = styled.aside<{ $collapsed: boolean; $mobileOpen: boolean }>`
   width: ${({ theme, $collapsed }) => ($collapsed ? theme.layout.sidebarCollapsedWidth : theme.layout.sidebarWidth)};
   flex-shrink: 0;
   height: 100vh;
@@ -39,6 +41,31 @@ const Rail = styled.aside<{ $collapsed: boolean }>`
   color: ${({ theme }) => theme.colors.sidebarText};
   transition: width ${({ theme }) => theme.transition.base};
   z-index: 20;
+
+  /* G19: below this width the rail becomes an off-canvas drawer instead of squeezing content. */
+  @media (max-width: 900px) {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: ${({ theme }) => theme.layout.sidebarWidth};
+    max-width: 85vw;
+    transform: translateX(${({ $mobileOpen }) => ($mobileOpen ? '0' : '-100%')});
+    transition: transform ${({ theme }) => theme.transition.base};
+    box-shadow: ${({ theme, $mobileOpen }) => ($mobileOpen ? theme.shadow.lg : 'none')};
+    z-index: 100;
+  }
+`;
+
+const Backdrop = styled.div<{ $visible: boolean }>`
+  display: none;
+
+  @media (max-width: 900px) {
+    display: ${({ $visible }) => ($visible ? 'block' : 'none')};
+    position: fixed;
+    inset: 0;
+    background: ${({ theme }) => theme.colors.overlay};
+    z-index: 90;
+  }
 `;
 
 const Brand = styled.div<{ $collapsed: boolean }>`
@@ -218,6 +245,9 @@ const ConfirmText = styled.p`
 
 interface SidebarProps {
   companyName?: string;
+  /** G19: controls the off-canvas drawer on narrow screens; ignored above the 900px breakpoint. */
+  mobileOpen?: boolean;
+  onCloseMobile?: () => void;
 }
 
 function initials(name: string) {
@@ -232,7 +262,7 @@ function initials(name: string) {
   );
 }
 
-export function Sidebar({ companyName = 'Your Company' }: SidebarProps) {
+export function Sidebar({ companyName = 'Your Company', mobileOpen = false, onCloseMobile }: SidebarProps) {
   const { logout } = useAuth();
   const navigate = useNavigate();
   const { pathname } = useLocation();
@@ -241,9 +271,23 @@ export function Sidebar({ companyName = 'Your Company' }: SidebarProps) {
   const { canAccess } = usePermission();
   const activeKey = findNavItem(pathname)?.key;
 
+  // G14: modules a tenant has switched off disappear from the sidebar regardless of permission.
+  const [disabledModules, setDisabledModules] = useState<Set<ModuleCode>>(new Set());
+  useEffect(() => {
+    rbacService
+      .getEnabledModules()
+      .then(({ data }) => setDisabledModules(new Set(data.data.filter((m) => !m.enabled).map((m) => m.moduleCode))))
+      .catch(() => {
+        /* If this fails, modules just stay visible — permissions still gate access. */
+      });
+  }, []);
+
   const visibleSections = NAV_SECTIONS.map((section) => ({
     ...section,
-    items: section.items.filter((item) => !item.permission || canAccess(item.permission)),
+    items: section.items.filter(
+      (item) =>
+        (!item.permission || canAccess(item.permission)) && (!item.module || !disabledModules.has(item.module)),
+    ),
   })).filter((section) => section.items.length > 0);
 
   function toggleCollapsed() {
@@ -270,6 +314,7 @@ export function Sidebar({ companyName = 'Your Company' }: SidebarProps) {
         $collapsed={collapsed}
         aria-current={active ? 'page' : undefined}
         title={collapsed ? item.label : undefined}
+        onClick={onCloseMobile}
       >
         <Icon />
         <Label $collapsed={collapsed}>{item.label}</Label>
@@ -278,7 +323,9 @@ export function Sidebar({ companyName = 'Your Company' }: SidebarProps) {
   }
 
   return (
-    <Rail $collapsed={collapsed} aria-label="Main navigation">
+    <>
+      <Backdrop $visible={mobileOpen} onClick={onCloseMobile} aria-hidden="true" />
+      <Rail $collapsed={collapsed} $mobileOpen={mobileOpen} aria-label="Main navigation">
       <Brand $collapsed={collapsed}>
         <BrandMark aria-hidden="true">{initials(companyName)}</BrandMark>
         {!collapsed && (
@@ -335,6 +382,7 @@ export function Sidebar({ companyName = 'Your Company' }: SidebarProps) {
           You'll be signed out of <strong>{companyName}</strong> and need to sign in again to continue.
         </ConfirmText>
       </Modal>
-    </Rail>
+      </Rail>
+    </>
   );
 }

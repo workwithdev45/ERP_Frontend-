@@ -8,6 +8,7 @@ import type {
   PermissionDto,
   RoleDto,
   RoleUpsertRequest,
+  TenantModuleDto,
 } from '../types/rbac.types';
 
 export const rbacService = {
@@ -48,4 +49,9 @@ export const rbacService = {
 
   revokeRoleModulePermission: (roleId: number, moduleCode: ModuleCode) =>
     apiClient.delete<ApiResponse<void>>(API_ENDPOINTS.roles.modulePermission(roleId, moduleCode)),
+
+  getEnabledModules: () => apiClient.get<ApiResponse<TenantModuleDto[]>>(API_ENDPOINTS.modules.enabled),
+
+  setModuleEnabled: (moduleCode: ModuleCode, enabled: boolean) =>
+    apiClient.put<ApiResponse<TenantModuleDto>>(API_ENDPOINTS.modules.setEnabled(moduleCode), { enabled }),
 };
