@@ -16,9 +16,11 @@ const Overlay = styled.div`
   overflow-y: auto;
 `;
 
-const Panel = styled(Card)`
+const PANEL_WIDTH = { md: '520px', lg: '760px', xl: '1040px' } as const;
+
+const Panel = styled(Card)<{ $size: keyof typeof PANEL_WIDTH }>`
   width: 100%;
-  max-width: 520px;
+  max-width: ${({ $size }) => PANEL_WIDTH[$size]};
   /* Auto margins centre the dialog on screen, and let a tall one scroll instead of being clipped. */
   margin: auto 0;
   padding: ${({ theme }) => theme.space[6]};
@@ -66,7 +68,7 @@ const Footer = styled.div`
   margin-top: ${({ theme }) => theme.space[6]};
 `;
 
-export function Modal({ open, title, onClose, children, footer }: ModalProps) {
+export function Modal({ open, title, onClose, children, footer, size = 'md' }: ModalProps) {
   useEffect(() => {
     if (!open) return;
     function onKeyDown(event: KeyboardEvent) {
@@ -81,7 +83,7 @@ export function Modal({ open, title, onClose, children, footer }: ModalProps) {
   // Portal to <body> so the backdrop covers the whole app (sidebar included), wherever the modal is used.
   return createPortal(
     <Overlay onClick={onClose}>
-      <Panel onClick={(e) => e.stopPropagation()}>
+      <Panel $size={size} onClick={(e) => e.stopPropagation()}>
         <Header>
           {title && <Title>{title}</Title>}
           <CloseButton type="button" aria-label="Close" onClick={onClose}>

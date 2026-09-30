@@ -56,7 +56,7 @@ export function MovementLedgerTable({ movements }: MovementLedgerTableProps) {
               <Td>
                 <BadgeText tone={TONE_BY_TYPE[movement.movementType] ?? 'neutral'}>{movement.movementType}</BadgeText>
               </Td>
-              <Td $numeric>{movement.quantity}</Td>
+              <Td $numeric>{movement.quantity > 0 ? `+${movement.quantity}` : movement.quantity}</Td>
               <Td $numeric>{movement.totalValue == null ? '—' : `₹${movement.totalValue.toFixed(2)}`}</Td>
               <Td $muted>{movement.reasonCode ? movement.reasonCode : movement.reason || '—'}</Td>
             </tr>
