@@ -99,4 +99,25 @@ export const GlobalStyle = createGlobalStyle`
       animation-duration: 0.01ms !important;
     }
   }
+
+  /* Report "Print / Save as PDF": print only the element marked .print-area, on white. */
+  @media print {
+    body * {
+      visibility: hidden;
+    }
+    .print-area,
+    .print-area * {
+      visibility: visible;
+    }
+    .print-area {
+      position: absolute;
+      inset: 0 auto auto 0;
+      width: 100%;
+      color: #000;
+      background: #fff;
+    }
+    .no-print {
+      display: none !important;
+    }
+  }
 `;

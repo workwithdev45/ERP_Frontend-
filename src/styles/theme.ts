@@ -105,6 +105,9 @@ export const lightTheme = {
     dangerFillHover: palette.red700,
     info: palette.sky600,
     infoLight: palette.sky50,
+    // Chart series (categorical slots 1–2), validated for CVD separation and 3:1 contrast on bg.
+    chartSeries1: '#2a78d6',
+    chartSeries2: '#eb6834',
     violet: palette.violet600,
     violetLight: palette.violet50,
 
@@ -264,6 +267,8 @@ export const darkTheme: AppTheme = {
     dangerFillHover: '#C0302B',
     info: '#5AB0F0',
     infoLight: '#102D4B',
+    chartSeries1: '#3987e5',
+    chartSeries2: '#d95926',
     violet: '#A48CFF',
     violetLight: '#231D45',
 

@@ -44,6 +44,12 @@ export const API_ENDPOINTS = {
     get: '/company',
     update: '/company',
   },
+  reports: {
+    dashboard: '/reports/dashboard',
+    salesRegister: '/reports/sales-register',
+    purchaseRegister: '/reports/purchase-register',
+    stockValuation: '/reports/stock-valuation',
+  },
   parties: {
     list: '/parties',
     byId: (id: number) => `/parties/${id}`,
