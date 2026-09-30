@@ -137,7 +137,7 @@ export function ResetPasswordPage() {
           id="newPassword"
           type={showPassword ? 'text' : 'password'}
           label="New password"
-          placeholder="••••••••"
+          placeholder="Enter new password"
           prefixIcon={<LockOutlined />}
           suffixIcon={eyeIcon}
           onSuffixIconClick={() => setShowPassword((prev) => !prev)}
@@ -151,8 +151,10 @@ export function ResetPasswordPage() {
           id="confirmPassword"
           type={showPassword ? 'text' : 'password'}
           label="Confirm new password"
-          placeholder="••••••••"
+          placeholder="Re-enter new password"
           prefixIcon={<LockOutlined />}
+          suffixIcon={eyeIcon}
+          onSuffixIconClick={() => setShowPassword((prev) => !prev)}
           value={confirm}
           onChange={(e) => setConfirm(e.target.value)}
           error={confirm.length > 0 && !matches ? "Passwords don't match." : undefined}

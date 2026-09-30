@@ -96,6 +96,8 @@ export function ChangePasswordModal({ open, onClose }: ChangePasswordModalProps)
             label="New password"
             value={newPassword}
             onChange={(e) => setNewPassword(e.target.value)}
+            suffixIcon={showPasswords ? <EyeInvisibleOutlined /> : <EyeOutlined />}
+            onSuffixIconClick={() => setShowPasswords((prev) => !prev)}
             hint={PASSWORD_POLICY_HINT}
             required
           />

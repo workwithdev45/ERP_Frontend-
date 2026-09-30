@@ -111,7 +111,7 @@ export function SetPasswordPage() {
           id="adminPassword"
           type={showPassword ? 'text' : 'password'}
           label="Password"
-          placeholder="••••••••"
+          placeholder="Enter password"
           value={password}
           onChange={(e) => setPassword(e.target.value)}
           suffixIcon={showPassword ? <EyeInvisibleOutlined /> : <EyeOutlined />}

@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import styled from 'styled-components';
 import { isAxiosError } from 'axios';
+import { EyeInvisibleOutlined, EyeOutlined } from '@ant-design/icons';
 import { Button } from '@/components/common/Button/Button';
 import { Input } from '@/components/common/Input/Input';
 import { OnboardingLayout } from '@/modules/onboarding/components/OnboardingLayout';
@@ -29,6 +30,7 @@ export function AcceptInvitePage() {
   const token = searchParams.get('token') ?? '';
 
   const [password, setPassword] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState('');
   const [submitting, setSubmitting] = useState(false);
   const [done, setDone] = useState(false);
@@ -80,11 +82,13 @@ export function AcceptInvitePage() {
       <Form onSubmit={handleSubmit}>
         <Input
           id="password"
-          type="password"
+          type={showPassword ? 'text' : 'password'}
           label="Password"
-          placeholder="••••••••"
+          placeholder="Enter password"
           value={password}
           onChange={(e) => setPassword(e.target.value)}
+          suffixIcon={showPassword ? <EyeInvisibleOutlined /> : <EyeOutlined />}
+          onSuffixIconClick={() => setShowPassword((prev) => !prev)}
           hint={PASSWORD_POLICY_HINT}
           required
         />
