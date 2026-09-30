@@ -31,6 +31,8 @@ import type {
   TradeDocument,
 } from '@/modules/trade/types/trade.types';
 import { ConvertQuotationModal } from '../components/ConvertQuotationModal';
+import { InvoiceCompliancePanel } from '../components/InvoiceCompliancePanel';
+import { RemindersTab } from '../components/RemindersTab';
 import { salesService, type ConvertQuotationRequest } from '../services/salesService';
 
 const Empty = styled.div`
@@ -43,7 +45,7 @@ const TabPanel = styled.div`
   padding: ${({ theme }) => theme.space[4]} ${({ theme }) => theme.space[5]} 0;
 `;
 
-type TabKey = 'customers' | 'quotations' | 'orders' | 'deliveries' | 'invoices' | 'returns' | 'receipts' | 'receivables';
+type TabKey = 'customers' | 'quotations' | 'orders' | 'deliveries' | 'invoices' | 'returns' | 'receipts' | 'receivables' | 'reminders';
 type FormKind = 'quotation' | 'order' | 'invoice';
 type FulfilKind = 'delivery' | 'invoice' | 'return';
 
@@ -78,7 +80,7 @@ const FULFIL_CONFIG: Record<FulfilKind, { title: string; intro: string; submit: 
 };
 
 export function SalesPage() {
-  const { canAccess } = usePermission();
+  const { canAccess, hasRole } = usePermission();
   const canCreate = canAccess('SALES_CREATE');
   const canEdit = canAccess('SALES_EDIT');
 
@@ -349,6 +351,8 @@ export function SalesPage() {
         return receipts.length === 0 ? <Empty>No customer receipts yet.</Empty> : <PaymentListTable payments={receipts} />;
       case 'receivables':
         return ageing.length === 0 ? <Empty>Nothing due from customers.</Empty> : <AgeingTable rows={ageing} onOpenDocument={(id) => detail.open(id)} />;
+      case 'reminders':
+        return <RemindersTab canEdit={canEdit} isAdmin={hasRole('ADMIN')} />;
     }
   }
 
@@ -380,6 +384,7 @@ export function SalesPage() {
               { key: 'returns', label: 'Returns' },
               { key: 'receipts', label: 'Receipts' },
               { key: 'receivables', label: 'Receivables' },
+              { key: 'reminders', label: 'Reminders' },
             ]}
           />
         </TabPanel>
@@ -467,6 +472,11 @@ export function SalesPage() {
           loading={detail.loading}
           error={detail.error}
           actions={detail.document ? renderDetailActions(detail.document) : null}
+          extra={
+            detail.document?.docType === 'SALES_INVOICE' ? (
+              <InvoiceCompliancePanel key={detail.document.id} invoice={detail.document} canCreate={canCreate} canEdit={canEdit} />
+            ) : null
+          }
           onOpenLinked={(id) => detail.open(id)}
           onClose={detail.close}
         />

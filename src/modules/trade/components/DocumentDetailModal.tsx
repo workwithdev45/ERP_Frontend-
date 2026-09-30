@@ -157,11 +157,13 @@ interface DocumentDetailModalProps {
   error?: string;
   /** Workflow buttons for the document's current status (approve, receive, bill, deliver, ...). */
   actions?: ReactNode;
+  /** Extra sections for this document type, e.g. e-invoice and reminders on a tax invoice. */
+  extra?: ReactNode;
   onOpenLinked: (id: number) => void;
   onClose: () => void;
 }
 
-export function DocumentDetailModal({ document: doc, loading, error, actions, onOpenLinked, onClose }: DocumentDetailModalProps) {
+export function DocumentDetailModal({ document: doc, loading, error, actions, extra, onOpenLinked, onClose }: DocumentDetailModalProps) {
   if (!doc) {
     return loading ? (
       <Modal open title="Loading…" onClose={onClose}>
@@ -329,6 +331,8 @@ export function DocumentDetailModal({ document: doc, loading, error, actions, on
             reverseCharge={doc.reverseCharge}
           />
         </Bottom>
+
+        {extra}
 
         {doc.linkedDocuments.length > 0 && (
           <Section>
