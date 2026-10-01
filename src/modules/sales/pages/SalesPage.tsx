@@ -16,17 +16,17 @@ import { FulfilDocumentModal } from '@/modules/trade/components/FulfilDocumentMo
 import { PartyFormModal } from '@/modules/trade/components/PartyFormModal';
 import { PartyListTable } from '@/modules/trade/components/PartyListTable';
 import { PaymentFormModal } from '@/modules/trade/components/PaymentFormModal';
+import { PagedView } from '@/modules/trade/components/PagedView';
 import { PaymentListTable } from '@/modules/trade/components/PaymentListTable';
 import { useDocumentDetail } from '@/modules/trade/hooks/useDocumentDetail';
+import { usePagedList } from '@/modules/trade/hooks/usePagedList';
 import { useTradeMasters } from '@/modules/trade/hooks/useTradeMasters';
 import { partyService } from '@/modules/trade/services/partyService';
 import type {
   AgeingParty,
   DocumentRequest,
-  DocumentSummary,
   Party,
   PartyRequest,
-  Payment,
   PaymentRequest,
   TradeDocument,
 } from '@/modules/trade/types/trade.types';
@@ -87,12 +87,13 @@ export function SalesPage() {
   const [tab, setTab] = useState<TabKey>('orders');
   const masters = useTradeMasters('CUSTOMER');
 
-  const [quotations, setQuotations] = useState<DocumentSummary[]>([]);
-  const [orders, setOrders] = useState<DocumentSummary[]>([]);
-  const [deliveries, setDeliveries] = useState<DocumentSummary[]>([]);
-  const [invoices, setInvoices] = useState<DocumentSummary[]>([]);
-  const [creditNotes, setCreditNotes] = useState<DocumentSummary[]>([]);
-  const [receipts, setReceipts] = useState<Payment[]>([]);
+  // W15: each list is paged on the server and loads when its tab is opened.
+  const quotations = usePagedList(salesService.listQuotations, tab === 'quotations');
+  const orders = usePagedList(salesService.listOrders, tab === 'orders');
+  const deliveries = usePagedList(salesService.listDeliveries, tab === 'deliveries');
+  const invoices = usePagedList(salesService.listInvoices, tab === 'invoices');
+  const creditNotes = usePagedList(salesService.listCreditNotes, tab === 'returns');
+  const receipts = usePagedList(salesService.listReceipts, tab === 'receipts');
   const [ageing, setAgeing] = useState<AgeingParty[]>([]);
   const [loading, setLoading] = useState(true);
   const [loadError, setLoadError] = useState('');
@@ -110,21 +111,7 @@ export function SalesPage() {
   const loadLists = useCallback(async () => {
     setLoadError('');
     try {
-      const [q, o, d, i, c, r, a] = await Promise.all([
-        salesService.listQuotations(),
-        salesService.listOrders(),
-        salesService.listDeliveries(),
-        salesService.listInvoices(),
-        salesService.listCreditNotes(),
-        salesService.listReceipts(),
-        salesService.receivablesAgeing(),
-      ]);
-      setQuotations(q.data.data);
-      setOrders(o.data.data);
-      setDeliveries(d.data.data);
-      setInvoices(i.data.data);
-      setCreditNotes(c.data.data);
-      setReceipts(r.data.data);
+      const a = await salesService.receivablesAgeing();
       setAgeing(a.data.data);
     } catch (err) {
       setLoadError(apiErrorMessage(err, 'Could not load sales. Please refresh the page.'));
@@ -137,9 +124,11 @@ export function SalesPage() {
     loadLists();
   }, [loadLists]);
 
-  const refreshAll = useCallback(async () => {
-    await Promise.all([loadLists(), masters.reloadParties()]);
-  }, [loadLists, masters]);
+  const pagedLists = [quotations, orders, deliveries, invoices, creditNotes, receipts];
+  const refreshAll = async () => {
+    // Reload whatever has been opened so far; unopened tabs load fresh when shown.
+    await Promise.all([loadLists(), masters.reloadParties(), ...pagedLists.filter((l) => l.loaded).map((l) => l.reload())]);
+  };
 
   async function submitDocument(create: () => Promise<{ data: { data: TradeDocument } }>, close: () => void) {
     setSubmitting(true);
@@ -330,25 +319,45 @@ export function SalesPage() {
           <PartyListTable parties={masters.parties} outstandingLabel="Receivable" onEdit={(party) => { setFormError(''); setPartyModal({ party }); }} />
         );
       case 'quotations':
-        return quotations.length === 0 ? <Empty>No quotations yet.</Empty> : <DocumentListTable documents={quotations} dueLabel="Valid until" onOpen={open} />;
+        return (
+          <PagedView list={quotations} searchPlaceholder="Search quotations by number or customer" empty="No quotations yet.">
+            {(items) => <DocumentListTable documents={items} dueLabel="Valid until" onOpen={open} />}
+          </PagedView>
+        );
       case 'orders':
-        return orders.length === 0 ? <Empty>No sales orders yet.</Empty> : <DocumentListTable documents={orders} dueLabel="Expected" onOpen={open} />;
+        return (
+          <PagedView list={orders} searchPlaceholder="Search orders by number, customer or customer PO" empty="No sales orders yet.">
+            {(items) => <DocumentListTable documents={items} dueLabel="Expected" onOpen={open} />}
+          </PagedView>
+        );
       case 'deliveries':
-        return deliveries.length === 0 ? (
-          <Empty>No deliveries yet. Open a sales order and choose “Deliver”.</Empty>
-        ) : (
-          <DocumentListTable documents={deliveries} onOpen={open} />
+        return (
+          <PagedView list={deliveries} searchPlaceholder="Search deliveries" empty="No deliveries yet. Open a sales order and choose “Deliver”.">
+            {(items) => <DocumentListTable documents={items} onOpen={open} />}
+          </PagedView>
         );
       case 'invoices':
-        return invoices.length === 0 ? (
-          <Empty>No invoices yet. Invoice a delivery challan, or create a direct invoice.</Empty>
-        ) : (
-          <DocumentListTable documents={invoices} dueLabel="Due" showBalance onOpen={open} />
+        return (
+          <PagedView
+            list={invoices}
+            searchPlaceholder="Search invoices by number or customer"
+            empty="No invoices yet. Invoice a delivery challan, or create a direct invoice."
+          >
+            {(items) => <DocumentListTable documents={items} dueLabel="Due" showBalance onOpen={open} />}
+          </PagedView>
         );
       case 'returns':
-        return creditNotes.length === 0 ? <Empty>No sales returns.</Empty> : <DocumentListTable documents={creditNotes} onOpen={open} />;
+        return (
+          <PagedView list={creditNotes} searchPlaceholder="Search sales returns" empty="No sales returns.">
+            {(items) => <DocumentListTable documents={items} onOpen={open} />}
+          </PagedView>
+        );
       case 'receipts':
-        return receipts.length === 0 ? <Empty>No customer receipts yet.</Empty> : <PaymentListTable payments={receipts} />;
+        return (
+          <PagedView list={receipts} searchPlaceholder="Search receipts by number, customer or UTR" empty="No customer receipts yet.">
+            {(items) => <PaymentListTable payments={items} />}
+          </PagedView>
+        );
       case 'receivables':
         return ageing.length === 0 ? <Empty>Nothing due from customers.</Empty> : <AgeingTable rows={ageing} onOpenDocument={(id) => detail.open(id)} />;
       case 'reminders':
@@ -457,7 +466,11 @@ export function SalesPage() {
         title="Record customer receipt"
         partyLabel="Customer"
         parties={masters.parties}
-        documents={invoices}
+        loadOpenDocuments={(partyId) =>
+          salesService
+            .listInvoices({ partyId, status: ['UNPAID', 'PARTIALLY_PAID'], size: 200 })
+            .then((res) => res.data.data.content)
+        }
         initialPartyId={receiptForm?.partyId}
         initialDocumentId={receiptForm?.documentId}
         submitting={submitting}

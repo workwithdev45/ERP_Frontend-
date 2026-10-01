@@ -8,10 +8,24 @@ const Row = styled.tr`
   cursor: pointer;
 `;
 
-const Number = styled.span`
+/** The document number is the row's keyboard-reachable control; the row itself is a mouse shortcut. */
+const Number = styled.button`
+  padding: 0;
+  background: none;
+  border: none;
+  color: inherit;
+  cursor: pointer;
   font-family: ${({ theme }) => theme.font.mono};
+  font-size: inherit;
   font-weight: ${({ theme }) => theme.fontWeight.medium};
   white-space: nowrap;
+  text-align: left;
+
+  &:focus-visible {
+    outline: 2px solid ${({ theme }) => theme.colors.primary};
+    outline-offset: 2px;
+    border-radius: 2px;
+  }
 `;
 
 const Sub = styled.div`
@@ -47,7 +61,16 @@ export function DocumentListTable({ documents, dueLabel, showBalance, onOpen }: 
           {documents.map((doc) => (
             <Row key={doc.id} onClick={() => onOpen(doc)}>
               <Td>
-                <Number>{doc.docNumber}</Number>
+                <Number
+                  type="button"
+                  aria-label={`Open ${doc.docNumber}`}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    onOpen(doc);
+                  }}
+                >
+                  {doc.docNumber}
+                </Number>
                 {doc.sourceDocumentNumber && <Sub>from {doc.sourceDocumentNumber}</Sub>}
               </Td>
               <Td>

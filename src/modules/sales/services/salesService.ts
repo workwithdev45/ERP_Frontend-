@@ -1,14 +1,19 @@
 import { apiClient } from '@/api/apiClient';
 import { API_ENDPOINTS } from '@/api/apiEndpoints';
 import type { ApiResponse } from '@/types/api.types';
+import type { PagedResponse } from '@/types/pagination.types';
 import type {
   AgeingParty,
   DocumentRequest,
   DocumentSummary,
+  ListParams,
   Payment,
   PaymentRequest,
   TradeDocument,
 } from '@/modules/trade/types/trade.types';
+
+/** Repeats array params (status=A&status=B), which is how Spring binds a list. */
+const list = (params?: ListParams) => ({ params, paramsSerializer: { indexes: null } });
 
 const E = API_ENDPOINTS.sales;
 
@@ -21,26 +26,26 @@ export interface ConvertQuotationRequest {
 export const salesService = {
   getDocument: (id: number) => apiClient.get<ApiResponse<TradeDocument>>(E.document(id)),
 
-  listQuotations: () => apiClient.get<ApiResponse<DocumentSummary[]>>(E.quotations),
+  listQuotations: (params?: ListParams) => apiClient.get<ApiResponse<PagedResponse<DocumentSummary>>>(E.quotations, list(params)),
   createQuotation: (payload: DocumentRequest) => apiClient.post<ApiResponse<TradeDocument>>(E.quotations, payload),
   convertQuotation: (id: number, payload: ConvertQuotationRequest) =>
     apiClient.post<ApiResponse<TradeDocument>>(E.convertQuotation(id), payload),
   cancelQuotation: (id: number) => apiClient.post<ApiResponse<TradeDocument>>(E.cancelQuotation(id)),
 
-  listOrders: () => apiClient.get<ApiResponse<DocumentSummary[]>>(E.orders),
+  listOrders: (params?: ListParams) => apiClient.get<ApiResponse<PagedResponse<DocumentSummary>>>(E.orders, list(params)),
   createOrder: (payload: DocumentRequest) => apiClient.post<ApiResponse<TradeDocument>>(E.orders, payload),
   cancelOrder: (id: number) => apiClient.post<ApiResponse<TradeDocument>>(E.cancelOrder(id)),
 
-  listDeliveries: () => apiClient.get<ApiResponse<DocumentSummary[]>>(E.deliveries),
+  listDeliveries: (params?: ListParams) => apiClient.get<ApiResponse<PagedResponse<DocumentSummary>>>(E.deliveries, list(params)),
   createDelivery: (payload: DocumentRequest) => apiClient.post<ApiResponse<TradeDocument>>(E.deliveries, payload),
 
-  listInvoices: () => apiClient.get<ApiResponse<DocumentSummary[]>>(E.invoices),
+  listInvoices: (params?: ListParams) => apiClient.get<ApiResponse<PagedResponse<DocumentSummary>>>(E.invoices, list(params)),
   createInvoice: (payload: DocumentRequest) => apiClient.post<ApiResponse<TradeDocument>>(E.invoices, payload),
 
-  listCreditNotes: () => apiClient.get<ApiResponse<DocumentSummary[]>>(E.creditNotes),
+  listCreditNotes: (params?: ListParams) => apiClient.get<ApiResponse<PagedResponse<DocumentSummary>>>(E.creditNotes, list(params)),
   createCreditNote: (payload: DocumentRequest) => apiClient.post<ApiResponse<TradeDocument>>(E.creditNotes, payload),
 
-  listReceipts: () => apiClient.get<ApiResponse<Payment[]>>(E.receipts),
+  listReceipts: (params?: ListParams) => apiClient.get<ApiResponse<PagedResponse<Payment>>>(E.receipts, list(params)),
   recordReceipt: (payload: PaymentRequest) => apiClient.post<ApiResponse<Payment>>(E.receipts, payload),
 
   receivablesAgeing: () => apiClient.get<ApiResponse<AgeingParty[]>>(E.receivablesAgeing),

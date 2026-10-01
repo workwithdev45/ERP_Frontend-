@@ -10,8 +10,22 @@ const PartyRow = styled.tr`
   }
 `;
 
-const DocRow = styled.tr`
+const DocRow = styled.tr<{ $clickable: boolean }>`
+  cursor: ${({ $clickable }) => ($clickable ? 'pointer' : 'default')};
+`;
+
+const DocButton = styled.button`
+  padding: 0;
+  background: none;
+  border: none;
+  color: inherit;
+  font: inherit;
   cursor: pointer;
+
+  &:focus-visible {
+    outline: 2px solid ${({ theme }) => theme.colors.primary};
+    outline-offset: 2px;
+  }
 `;
 
 const Overdue = styled.span<{ $late: boolean }>`
@@ -29,7 +43,8 @@ const amountOrDash = (value: number) => (value ? formatMoney(value) : '—');
 
 interface AgeingTableProps {
   rows: AgeingParty[];
-  onOpenDocument: (id: number) => void;
+  /** Omit where documents can't be opened (e.g. the Reports page); rows then aren't interactive. */
+  onOpenDocument?: (id: number) => void;
 }
 
 /** Receivables/payables by party, bucketed by days past due, with each open document beneath. */
@@ -62,9 +77,22 @@ export function AgeingTable({ rows, onOpenDocument }: AgeingTableProps) {
                 <Td $numeric>{formatMoney(row.total)}</Td>
               </PartyRow>
               {row.documents.map((doc) => (
-                <DocRow key={doc.documentId} onClick={() => onOpenDocument(doc.documentId)}>
+                <DocRow key={doc.documentId} $clickable={!!onOpenDocument} onClick={() => onOpenDocument?.(doc.documentId)}>
                   <Td $muted style={{ paddingLeft: 32 }}>
-                    {doc.docNumber} · due {formatDate(doc.dueDate)} ·{' '}
+                    {onOpenDocument ? (
+                      <DocButton
+                        type="button"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          onOpenDocument(doc.documentId);
+                        }}
+                      >
+                        {doc.docNumber}
+                      </DocButton>
+                    ) : (
+                      doc.docNumber
+                    )}{' '}
+                    · due {formatDate(doc.dueDate)} ·{' '}
                     <Overdue $late={doc.daysOverdue > 0}>
                       {doc.daysOverdue > 0 ? `${doc.daysOverdue} days overdue` : doc.daysOverdue === 0 ? 'due today' : `due in ${-doc.daysOverdue} days`}
                     </Overdue>

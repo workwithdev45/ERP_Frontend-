@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState, type FormEvent } from 'react';
+import { useEffect, useRef, useState, type FormEvent } from 'react';
 import styled from 'styled-components';
 import { Button } from '@/components/common/Button/Button';
 import { FormError } from '@/components/common/FormError/FormError';
@@ -82,8 +82,8 @@ interface PaymentFormModalProps {
   title: string;
   partyLabel: string;
   parties: Party[];
-  /** Every bill (vendor payments) or invoice (receipts); the form shows the party's open ones. */
-  documents: DocumentSummary[];
+  /** Loads the party's open bills (vendor payments) or invoices (receipts). */
+  loadOpenDocuments: (partyId: number) => Promise<DocumentSummary[]>;
   initialPartyId?: number | null;
   initialDocumentId?: number | null;
   submitting: boolean;
@@ -98,7 +98,7 @@ export function PaymentFormModal({
   title,
   partyLabel,
   parties,
-  documents,
+  loadOpenDocuments,
   initialPartyId,
   initialDocumentId,
   submitting,
@@ -114,13 +114,12 @@ export function PaymentFormModal({
   const [notes, setNotes] = useState('');
   const [allocations, setAllocations] = useState<Record<number, string>>({});
 
-  const openDocuments = useMemo(
-    () =>
-      documents
-        .filter((d) => String(d.partyId) === partyId && (d.status === 'UNPAID' || d.status === 'PARTIALLY_PAID') && d.balance > 0)
-        .sort((a, b) => a.docDate.localeCompare(b.docDate) || a.id - b.id),
-    [documents, partyId],
-  );
+  const [openDocuments, setOpenDocuments] = useState<DocumentSummary[]>([]);
+  const [loadingDocs, setLoadingDocs] = useState(false);
+  // The first load after opening from a bill/invoice pre-fills its balance.
+  const prefillRef = useRef<number | null>(null);
+  const loadRef = useRef(loadOpenDocuments);
+  loadRef.current = loadOpenDocuments;
 
   useEffect(() => {
     if (!open) return;
@@ -129,11 +128,42 @@ export function PaymentFormModal({
     setMode('BANK_TRANSFER');
     setReference('');
     setNotes('');
-    const initialDoc = documents.find((d) => d.id === initialDocumentId);
-    setAmount(initialDoc ? String(initialDoc.balance) : '');
-    setAllocations(initialDoc ? { [initialDoc.id]: String(initialDoc.balance) } : {});
+    setAmount('');
+    setAllocations({});
+    prefillRef.current = initialDocumentId ?? null;
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [open]);
+
+  useEffect(() => {
+    if (!open || !partyId) {
+      setOpenDocuments([]);
+      return;
+    }
+    let cancelled = false;
+    setLoadingDocs(true);
+    loadRef
+      .current(Number(partyId))
+      .then((docs) => {
+        if (cancelled) return;
+        const sorted = docs.filter((d) => d.balance > 0).sort((a, b) => a.docDate.localeCompare(b.docDate) || a.id - b.id);
+        setOpenDocuments(sorted);
+        const prefill = sorted.find((d) => d.id === prefillRef.current);
+        if (prefill) {
+          setAmount(String(prefill.balance));
+          setAllocations({ [prefill.id]: String(prefill.balance) });
+        }
+        prefillRef.current = null;
+      })
+      .catch(() => {
+        if (!cancelled) setOpenDocuments([]);
+      })
+      .finally(() => {
+        if (!cancelled) setLoadingDocs(false);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [open, partyId]);
 
   /** Spreads the amount over open documents, oldest first — but the one the form was opened from comes first. */
   function autoAllocate(total: number) {
@@ -225,7 +255,9 @@ export function PaymentFormModal({
           <Input id="paymentNotes" label="Notes (optional)" value={notes} onChange={(e) => setNotes(e.target.value)} />
         </Row>
 
+        {partyId && loadingDocs && <Empty>Loading open documents…</Empty>}
         {partyId &&
+          !loadingDocs &&
           (openDocuments.length === 0 ? (
             <Empty>Nothing outstanding for this party — the whole amount will be kept as an advance.</Empty>
           ) : (

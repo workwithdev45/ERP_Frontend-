@@ -1,4 +1,4 @@
-import { useEffect } from 'react';
+import { useEffect, useId, useRef } from 'react';
 import { createPortal } from 'react-dom';
 import styled from 'styled-components';
 import { CloseOutlined } from '@ant-design/icons';
@@ -26,6 +26,10 @@ const Panel = styled(Card)<{ $size: keyof typeof PANEL_WIDTH }>`
   padding: ${({ theme }) => theme.space[6]};
   box-shadow: ${({ theme }) => theme.shadow.lg};
   border-color: transparent;
+
+  &:focus {
+    outline: none;
+  }
 `;
 
 const Header = styled.div`
@@ -68,24 +72,70 @@ const Footer = styled.div`
   margin-top: ${({ theme }) => theme.space[6]};
 `;
 
+const FOCUSABLE = 'a[href], button:not([disabled]), input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])';
+
 export function Modal({ open, title, onClose, children, footer, size = 'md' }: ModalProps) {
+  const titleId = useId();
+  const panelRef = useRef<HTMLDivElement>(null);
+  // Keep the latest onClose without re-running the focus effect when a parent passes a new function.
+  const onCloseRef = useRef(onClose);
+  onCloseRef.current = onClose;
+
   useEffect(() => {
     if (!open) return;
+    const previouslyFocused = document.activeElement as HTMLElement | null;
+    const panel = panelRef.current;
+
+    // Focus the first field (or the dialog itself) unless something inside already asked for focus.
+    if (panel && !panel.contains(document.activeElement)) {
+      const first = [...panel.querySelectorAll<HTMLElement>(FOCUSABLE)].find((el) => el.getAttribute('aria-label') !== 'Close');
+      (first ?? panel).focus();
+    }
+
     function onKeyDown(event: KeyboardEvent) {
-      if (event.key === 'Escape') onClose();
+      if (event.key === 'Escape') {
+        onCloseRef.current();
+        return;
+      }
+      // Keep Tab inside the dialog.
+      if (event.key === 'Tab' && panel) {
+        const focusable = [...panel.querySelectorAll<HTMLElement>(FOCUSABLE)];
+        if (focusable.length === 0) return;
+        const first = focusable[0];
+        const last = focusable[focusable.length - 1];
+        if (event.shiftKey && document.activeElement === first) {
+          event.preventDefault();
+          last.focus();
+        } else if (!event.shiftKey && document.activeElement === last) {
+          event.preventDefault();
+          first.focus();
+        }
+      }
     }
     window.addEventListener('keydown', onKeyDown);
-    return () => window.removeEventListener('keydown', onKeyDown);
-  }, [open, onClose]);
+    return () => {
+      window.removeEventListener('keydown', onKeyDown);
+      // Return focus to whatever opened the dialog.
+      previouslyFocused?.focus?.();
+    };
+  }, [open]);
 
   if (!open) return null;
 
   // Portal to <body> so the backdrop covers the whole app (sidebar included), wherever the modal is used.
   return createPortal(
     <Overlay onClick={onClose}>
-      <Panel $size={size} onClick={(e) => e.stopPropagation()}>
+      <Panel
+        ref={panelRef}
+        $size={size}
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby={title ? titleId : undefined}
+        tabIndex={-1}
+        onClick={(e) => e.stopPropagation()}
+      >
         <Header>
-          {title && <Title>{title}</Title>}
+          {title && <Title id={titleId}>{title}</Title>}
           <CloseButton type="button" aria-label="Close" onClick={onClose}>
             <CloseOutlined />
           </CloseButton>

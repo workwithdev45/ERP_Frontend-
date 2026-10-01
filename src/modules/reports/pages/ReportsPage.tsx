@@ -205,13 +205,13 @@ export function ReportsPage() {
         return !receivables || receivables.length === 0 ? (
           <Empty>Nothing due from customers.</Empty>
         ) : (
-          <AgeingTable rows={receivables} onOpenDocument={() => undefined} />
+          <AgeingTable rows={receivables} />
         );
       case 'payables':
         return !payables || payables.length === 0 ? (
           <Empty>Nothing owed to vendors.</Empty>
         ) : (
-          <AgeingTable rows={payables} onOpenDocument={() => undefined} />
+          <AgeingTable rows={payables} />
         );
     }
   }

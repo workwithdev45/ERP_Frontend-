@@ -16,17 +16,17 @@ import { FulfilDocumentModal } from '@/modules/trade/components/FulfilDocumentMo
 import { PartyFormModal } from '@/modules/trade/components/PartyFormModal';
 import { PartyListTable } from '@/modules/trade/components/PartyListTable';
 import { PaymentFormModal } from '@/modules/trade/components/PaymentFormModal';
+import { PagedView } from '@/modules/trade/components/PagedView';
 import { PaymentListTable } from '@/modules/trade/components/PaymentListTable';
 import { useDocumentDetail } from '@/modules/trade/hooks/useDocumentDetail';
+import { usePagedList } from '@/modules/trade/hooks/usePagedList';
 import { useTradeMasters } from '@/modules/trade/hooks/useTradeMasters';
 import { partyService } from '@/modules/trade/services/partyService';
 import type {
   AgeingParty,
   DocumentRequest,
-  DocumentSummary,
   Party,
   PartyRequest,
-  Payment,
   PaymentRequest,
   ReorderSuggestion,
   TradeDocument,
@@ -80,11 +80,12 @@ export function PurchasePage() {
   const [tab, setTab] = useState<TabKey>('orders');
   const masters = useTradeMasters('VENDOR');
 
-  const [orders, setOrders] = useState<DocumentSummary[]>([]);
-  const [receipts, setReceipts] = useState<DocumentSummary[]>([]);
-  const [bills, setBills] = useState<DocumentSummary[]>([]);
-  const [debitNotes, setDebitNotes] = useState<DocumentSummary[]>([]);
-  const [payments, setPayments] = useState<Payment[]>([]);
+  // W15: each list is paged on the server and loads when its tab is opened.
+  const orders = usePagedList(purchaseService.listOrders, tab === 'orders');
+  const receipts = usePagedList(purchaseService.listReceipts, tab === 'receipts');
+  const bills = usePagedList(purchaseService.listBills, tab === 'bills');
+  const debitNotes = usePagedList(purchaseService.listDebitNotes, tab === 'returns');
+  const payments = usePagedList(purchaseService.listPayments, tab === 'payments');
   const [ageing, setAgeing] = useState<AgeingParty[]>([]);
   const [reorder, setReorder] = useState<ReorderSuggestion[]>([]);
   const [selectedReorder, setSelectedReorder] = useState<Set<number>>(new Set());
@@ -103,20 +104,7 @@ export function PurchasePage() {
   const loadLists = useCallback(async () => {
     setLoadError('');
     try {
-      const [o, r, b, d, p, a, s] = await Promise.all([
-        purchaseService.listOrders(),
-        purchaseService.listReceipts(),
-        purchaseService.listBills(),
-        purchaseService.listDebitNotes(),
-        purchaseService.listPayments(),
-        purchaseService.payablesAgeing(),
-        purchaseService.reorderSuggestions(),
-      ]);
-      setOrders(o.data.data);
-      setReceipts(r.data.data);
-      setBills(b.data.data);
-      setDebitNotes(d.data.data);
-      setPayments(p.data.data);
+      const [a, s] = await Promise.all([purchaseService.payablesAgeing(), purchaseService.reorderSuggestions()]);
       setAgeing(a.data.data);
       setReorder(s.data.data);
       // Drop selections whose suggestion went away (e.g. now covered by the PO just created).
@@ -132,9 +120,11 @@ export function PurchasePage() {
     loadLists();
   }, [loadLists]);
 
-  const refreshAll = useCallback(async () => {
-    await Promise.all([loadLists(), masters.reloadParties()]);
-  }, [loadLists, masters]);
+  const pagedLists = [orders, receipts, bills, debitNotes, payments];
+  const refreshAll = async () => {
+    // Reload whatever has been opened so far; unopened tabs load fresh when shown.
+    await Promise.all([loadLists(), masters.reloadParties(), ...pagedLists.filter((l) => l.loaded).map((l) => l.reload())]);
+  };
 
   /** Saves a document from a form, then shows it — the next workflow step is usually right there. */
   async function submitDocument(create: () => Promise<{ data: { data: TradeDocument } }>, close: () => void) {
@@ -311,23 +301,43 @@ export function PurchasePage() {
           <PartyListTable parties={masters.parties} outstandingLabel="Payable" onEdit={(party) => { setFormError(''); setPartyModal({ party }); }} />
         );
       case 'orders':
-        return orders.length === 0 ? <Empty>No purchase orders yet.</Empty> : <DocumentListTable documents={orders} dueLabel="Expected" onOpen={open} />;
+        return (
+          <PagedView list={orders} searchPlaceholder="Search orders by number, vendor or reference" empty="No purchase orders yet.">
+            {(items) => <DocumentListTable documents={items} dueLabel="Expected" onOpen={open} />}
+          </PagedView>
+        );
       case 'receipts':
-        return receipts.length === 0 ? (
-          <Empty>No goods received yet. Open an approved purchase order and choose “Receive goods”.</Empty>
-        ) : (
-          <DocumentListTable documents={receipts} onOpen={open} />
+        return (
+          <PagedView
+            list={receipts}
+            searchPlaceholder="Search goods receipts"
+            empty="No goods received yet. Open an approved purchase order and choose “Receive goods”."
+          >
+            {(items) => <DocumentListTable documents={items} onOpen={open} />}
+          </PagedView>
         );
       case 'bills':
-        return bills.length === 0 ? (
-          <Empty>No bills yet. Bill a goods receipt, or record a direct bill for services and expenses.</Empty>
-        ) : (
-          <DocumentListTable documents={bills} dueLabel="Due" showBalance onOpen={open} />
+        return (
+          <PagedView
+            list={bills}
+            searchPlaceholder="Search bills by number, vendor or vendor invoice no."
+            empty="No bills yet. Bill a goods receipt, or record a direct bill for services and expenses."
+          >
+            {(items) => <DocumentListTable documents={items} dueLabel="Due" showBalance onOpen={open} />}
+          </PagedView>
         );
       case 'returns':
-        return debitNotes.length === 0 ? <Empty>No purchase returns.</Empty> : <DocumentListTable documents={debitNotes} onOpen={open} />;
+        return (
+          <PagedView list={debitNotes} searchPlaceholder="Search purchase returns" empty="No purchase returns.">
+            {(items) => <DocumentListTable documents={items} onOpen={open} />}
+          </PagedView>
+        );
       case 'payments':
-        return payments.length === 0 ? <Empty>No vendor payments yet.</Empty> : <PaymentListTable payments={payments} />;
+        return (
+          <PagedView list={payments} searchPlaceholder="Search payments by number, vendor or UTR" empty="No vendor payments yet.">
+            {(items) => <PaymentListTable payments={items} />}
+          </PagedView>
+        );
       case 'payables':
         return ageing.length === 0 ? <Empty>Nothing owed to vendors.</Empty> : <AgeingTable rows={ageing} onOpenDocument={(id) => detail.open(id)} />;
       case 'reorder':
@@ -441,7 +451,11 @@ export function PurchasePage() {
         title="Record vendor payment"
         partyLabel="Vendor"
         parties={masters.parties}
-        documents={bills}
+        loadOpenDocuments={(partyId) =>
+          purchaseService
+            .listBills({ partyId, status: ['UNPAID', 'PARTIALLY_PAID'], size: 200 })
+            .then((res) => res.data.data.content)
+        }
         initialPartyId={paymentForm?.partyId}
         initialDocumentId={paymentForm?.documentId}
         submitting={submitting}

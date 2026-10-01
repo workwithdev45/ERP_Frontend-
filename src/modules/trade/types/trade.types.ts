@@ -222,3 +222,12 @@ export interface ReorderSuggestion {
   lastVendorId: number | null;
   lastVendorName: string | null;
 }
+
+/** Paging and filters for document/payment lists (server-side). */
+export interface ListParams {
+  page?: number;
+  size?: number;
+  q?: string;
+  status?: DocStatus[];
+  partyId?: number;
+}
