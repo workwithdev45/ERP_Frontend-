@@ -8,6 +8,8 @@ export const partyService = {
   list: (type?: PartyType) =>
     apiClient.get<ApiResponse<Party[]>>(API_ENDPOINTS.parties.list, { params: type ? { type } : undefined }),
 
+  get: (id: number) => apiClient.get<ApiResponse<Party>>(API_ENDPOINTS.parties.byId(id)),
+
   create: (payload: PartyRequest) => apiClient.post<ApiResponse<Party>>(API_ENDPOINTS.parties.list, payload),
 
   update: (id: number, payload: PartyRequest) => apiClient.put<ApiResponse<Party>>(API_ENDPOINTS.parties.byId(id), payload),

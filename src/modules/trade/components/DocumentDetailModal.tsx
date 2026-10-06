@@ -1,9 +1,12 @@
-import type { ReactNode } from 'react';
+import { useState, type ReactNode } from 'react';
 import styled from 'styled-components';
+import { PrinterOutlined } from '@ant-design/icons';
+import { Button } from '@/components/common/Button/Button';
 import { FormError } from '@/components/common/FormError/FormError';
 import { Modal } from '@/components/common/Modal/Modal';
 import type { DocType, TradeDocument } from '../types/trade.types';
 import { DOC_LABEL, formatDate, formatMoney, paymentModeLabel } from '../utils/format';
+import { DocumentPrintView } from './DocumentPrintView';
 import { StatusBadge } from './StatusBadge';
 import { TotalsPanel } from './TotalsPanel';
 
@@ -164,6 +167,8 @@ interface DocumentDetailModalProps {
 }
 
 export function DocumentDetailModal({ document: doc, loading, error, actions, extra, onOpenLinked, onClose }: DocumentDetailModalProps) {
+  const [printing, setPrinting] = useState(false);
+
   if (!doc) {
     return loading ? (
       <Modal open title="Loading…" onClose={onClose}>
@@ -183,8 +188,14 @@ export function DocumentDetailModal({ document: doc, loading, error, actions, ex
         <TitleRow>
           <StatusBadge status={doc.status} />
           {doc.reverseCharge && <span>Reverse charge</span>}
-          <Actions>{actions}</Actions>
+          <Actions>
+            {actions}
+            <Button variant="secondary" leadingIcon={<PrinterOutlined />} loading={printing} onClick={() => setPrinting(true)}>
+              Print / PDF
+            </Button>
+          </Actions>
         </TitleRow>
+        {printing && <DocumentPrintView doc={doc} onDone={() => setPrinting(false)} />}
         {error && <FormError>{error}</FormError>}
 
         <Facts>
