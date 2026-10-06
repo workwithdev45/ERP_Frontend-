@@ -1,5 +1,7 @@
 import { createBrowserRouter, Navigate, Outlet, type RouteObject } from 'react-router-dom';
 import { MainLayout } from '@/components/layout/MainLayout';
+import { ErrorBoundary } from '@/components/feedback/ErrorBoundary';
+import { NotFound } from '@/components/feedback/NotFound';
 import { ForgotPasswordPage } from '@/modules/auth/pages/ForgotPasswordPage';
 import { LoginPage } from '@/modules/auth/pages/LoginPage';
 import { ResetPasswordPage } from '@/modules/auth/pages/ResetPasswordPage';
@@ -47,7 +49,7 @@ function OnboardingLayoutRoute() {
   );
 }
 
-export const appRouter = createBrowserRouter([
+const appRoutes: RouteObject[] = [
   {
     path: '/',
     element: <Navigate to={ROUTE_PATHS.onboarding.getStarted} replace />,
@@ -124,5 +126,16 @@ export const appRouter = createBrowserRouter([
         ],
       },
     ],
+  },
+];
+
+/**
+ * Pathless root: catches render/loader errors from any page and sends unknown URLs to a 404,
+ * without changing any existing route's path or guard.
+ */
+export const appRouter = createBrowserRouter([
+  {
+    errorElement: <ErrorBoundary />,
+    children: [...appRoutes, { path: '*', element: <NotFound /> }],
   },
 ]);
